@@ -6,13 +6,13 @@ Top-down car racing game built on a custom C++17 / SDL2 / Lua engine using an En
 
 ## Controles
 
-| Tecla | Acción |
-|-------|--------|
-| W / ↑ | Acelerar (mantener presionado) |
-| A / ← | Girar a la izquierda |
-| D / → | Girar a la derecha |
-| Espacio / Shift izq. | Activar Nitro |
-| Escape | Pausar / Reanudar |
+| Tecla                | Acción                         |
+| -------------------- | ------------------------------ |
+| W / ↑                | Acelerar (mantener presionado) |
+| A / ←                | Girar a la izquierda           |
+| D / →                | Girar a la derecha             |
+| Espacio / Shift izq. | Activar Nitro                  |
+| Escape               | Pausar / Reanudar              |
 
 ---
 
@@ -29,11 +29,11 @@ Top-down car racing game built on a custom C++17 / SDL2 / Lua engine using an En
 
 ## Niveles
 
-| Nivel | Escenario | Dificultad | Duración aprox. |
-|-------|-----------|------------|-----------------|
-| 1 | Ciudad / Asfalto | Baja | ~45 s |
-| 2 | Montaña / Tierra | Media | ~60 s |
-| 3 | Fábrica / Noche | Alta | ~75 s |
+| Nivel | Escenario        | Dificultad | Duración aprox. |
+| ----- | ---------------- | ---------- | --------------- |
+| 1     | Ciudad / Asfalto | Baja       | ~45 s           |
+| 2     | Montaña / Tierra | Media      | ~60 s           |
+| 3     | Fábrica / Noche  | Alta       | ~75 s           |
 
 La lógica de cada nivel está en `assets/scripts/scene_levelN.lua` — editable sin recompilar.
 
@@ -42,13 +42,13 @@ La lógica de cada nivel está en `assets/scripts/scene_levelN.lua` — editable
 ## Requisitos
 
 | Dependencia | Versión |
-|-------------|---------|
-| g++ | C++17 |
-| SDL2 | 2.x |
-| SDL2_image | 2.x |
-| SDL2_ttf | 2.x |
-| SDL2_mixer | 2.x |
-| Lua | 5.4 |
+| ----------- | ------- |
+| g++         | C++17   |
+| SDL2        | 2.x     |
+| SDL2_image  | 2.x     |
+| SDL2_ttf    | 2.x     |
+| SDL2_mixer  | 2.x     |
+| Lua         | 5.4     |
 
 En macOS con Homebrew:
 
@@ -77,18 +77,18 @@ make clean
 
 Los archivos de sonido van en `assets/sounds/`. El sistema busca estos IDs:
 
-| ID | Descripción |
-|----|-------------|
-| `engine` | Motor del carrito (loop) |
-| `nitro` | Activación del nitro |
-| `jump` | Salto en rampa |
-| `bounce` | Rebote contra pared |
-| `death` | Muerte del jugador |
-| `win` | Llegar al checkpoint |
-| `music_menu` | Música del menú principal |
-| `music_level1` | Música nivel 1 |
-| `music_level2` | Música nivel 2 |
-| `music_level3` | Música nivel 3 |
+| ID             | Descripción               |
+| -------------- | ------------------------- |
+| `engine`       | Motor del carrito (loop)  |
+| `nitro`        | Activación del nitro      |
+| `jump`         | Salto en rampa            |
+| `bounce`       | Rebote contra pared       |
+| `death`        | Muerte del jugador        |
+| `win`          | Llegar al checkpoint      |
+| `music_menu`   | Música del menú principal |
+| `music_level1` | Música nivel 1            |
+| `music_level2` | Música nivel 2            |
+| `music_level3` | Música nivel 3            |
 
 Si un archivo no existe el motor lo ignora y continúa. Formatos soportados: WAV, OGG, MP3.
 
@@ -101,7 +101,7 @@ assets/
 ├── fonts/
 │   └── press_start.ttf
 ├── images/
-│   ├── car/car_blue.png           <- reemplaza "player_car"
+│   ├── car/car_blue.png
 │   ├── obstacles/saw_*.png
 │   ├── track/road_*.png
 │   └── ui/ramp.png, checkpoint.png
@@ -130,35 +130,35 @@ Para reemplazar un placeholder cambia `color_textures` por `sprites` en la escen
 
 ### Clases nuevas
 
-| Archivo | Clase | Responsabilidad |
-|---------|-------|-----------------|
-| `components/tag_component.hpp` | `TagComponent` | Etiqueta de rol (player, saw, wall, gap, ramp, checkpoint) |
-| `components/box_collider_component.hpp` | `BoxColliderComponent` | AABB para paredes/huecos/rampas/checkpoint |
-| `components/nitro_component.hpp` | `NitroComponent` | Estado y cooldown del nitro |
-| `components/player_component.hpp` | `PlayerComponent` | Estado del carrito (velocidad, salto, puntos, muerte) |
-| `audio_manager/audio_manager.hpp/.cpp` | `AudioManager` | Wrapper SDL_mixer para música y efectos |
-| `systems/car_movement_system.hpp` | `CarMovementSystem` | Movimiento angular (input → velocidad con ángulo) |
-| `systems/nitro_system.hpp` | `NitroSystem` | Ciclo boost/cooldown + activación por input |
-| `systems/box_collision_system.hpp` | `BoxCollisionSystem` | Pared→rebote, hueco→muerte, rampa→salto, checkpoint→victoria |
-| `systems/tag_system.hpp` | `TagSystem` | Lookup rápido de entidades por tag |
+| Archivo                                 | Clase                  | Responsabilidad                                              |
+| --------------------------------------- | ---------------------- | ------------------------------------------------------------ |
+| `components/tag_component.hpp`          | `TagComponent`         | Etiqueta de rol (player, saw, wall, gap, ramp, checkpoint)   |
+| `components/box_collider_component.hpp` | `BoxColliderComponent` | AABB para paredes/huecos/rampas/checkpoint                   |
+| `components/nitro_component.hpp`        | `NitroComponent`       | Estado y cooldown del nitro                                  |
+| `components/player_component.hpp`       | `PlayerComponent`      | Estado del carrito (velocidad, salto, puntos, muerte)        |
+| `audio_manager/audio_manager.hpp/.cpp`  | `AudioManager`         | Wrapper SDL_mixer para música y efectos                      |
+| `systems/car_movement_system.hpp`       | `CarMovementSystem`    | Movimiento angular (input → velocidad con ángulo)            |
+| `systems/nitro_system.hpp`              | `NitroSystem`          | Ciclo boost/cooldown + activación por input                  |
+| `systems/box_collision_system.hpp`      | `BoxCollisionSystem`   | Pared→rebote, hueco→muerte, rampa→salto, checkpoint→victoria |
+| `systems/tag_system.hpp`                | `TagSystem`            | Lookup rápido de entidades por tag                           |
 
 ### Clases modificadas
 
-| Archivo | Cambios principales |
-|---------|---------------------|
-| `game/game.hpp` | `AudioManager`, cámara (cameraX/Y), pausa (isPaused), `quit()` |
-| `game/game.cpp` | Nuevos sistemas, bucle con pausa, `updateCamera()`, overlay pausa, globals Lua |
-| `systems/render_system.hpp` | Offset de cámara + flag `isFixed` para HUD |
-| `systems/render_text_system.hpp` | Offset de cámara + flag `isFixed` para HUD |
-| `systems/damage_system.hpp` | Tag-aware: solo mata al jugador al tocar sierra; sierras sobreviven |
-| `components/text_component.hpp` | Campo `isFixed` (HUD fijo en pantalla) |
-| `components/sprite_component.hpp` | Campo `isFixed` |
-| `asset_manager/asset_manager.hpp/.cpp` | `addColorTexture()`, `hasFont()`, `hasTexture()` |
-| `scene_manager/scene_loader.hpp/.cpp` | Carga `color_textures`, `box_collider`, `tag`, `nitro`, `player` |
-| `binding/lua_binding.hpp` | Nuevas funciones: transform, player, HUD, audio, escenas |
-| `systems/script_system.hpp` | Registra todas las funciones Lua nuevas |
-| `ECS/ECS.hpp` | Constructor por defecto `Entity()` para uso en `unordered_map` |
-| `makefile` | `-lSDL2_mixer`, directorio `audio_manager` |
+| Archivo                                | Cambios principales                                                            |
+| -------------------------------------- | ------------------------------------------------------------------------------ |
+| `game/game.hpp`                        | `AudioManager`, cámara (cameraX/Y), pausa (isPaused), `quit()`                 |
+| `game/game.cpp`                        | Nuevos sistemas, bucle con pausa, `updateCamera()`, overlay pausa, globals Lua |
+| `systems/render_system.hpp`            | Offset de cámara + flag `isFixed` para HUD                                     |
+| `systems/render_text_system.hpp`       | Offset de cámara + flag `isFixed` para HUD                                     |
+| `systems/damage_system.hpp`            | Tag-aware: solo mata al jugador al tocar sierra; sierras sobreviven            |
+| `components/text_component.hpp`        | Campo `isFixed` (HUD fijo en pantalla)                                         |
+| `components/sprite_component.hpp`      | Campo `isFixed`                                                                |
+| `asset_manager/asset_manager.hpp/.cpp` | `addColorTexture()`, `hasFont()`, `hasTexture()`                               |
+| `scene_manager/scene_loader.hpp/.cpp`  | Carga `color_textures`, `box_collider`, `tag`, `nitro`, `player`               |
+| `binding/lua_binding.hpp`              | Nuevas funciones: transform, player, HUD, audio, escenas                       |
+| `systems/script_system.hpp`            | Registra todas las funciones Lua nuevas                                        |
+| `ECS/ECS.hpp`                          | Constructor por defecto `Entity()` para uso en `unordered_map`                 |
+| `makefile`                             | `-lSDL2_mixer`, directorio `audio_manager`                                     |
 
 ---
 
