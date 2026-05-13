@@ -3,21 +3,53 @@
     "expandedProjectPaths": [
     ],
     "fileStates": {
+        "lvl_01.tmx": {
+            "scale": 1.3941,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 197.9771895846783,
+                "y": 811.6347464313895
+            }
+        },
+        "lvl_02.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 4,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 649.25,
+                "y": 2548.375
+            }
+        },
+        "new_tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 0.94
+        },
         "terrain.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "terrain_2.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "/Users/estebanao/Documents/Videojuegos/game_engine/assets/images",
+    "last.imagePath": "/Users/estebanao/Downloads/kenney_new-platformer-pack-1",
     "map.height": 200,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 25,
+    "map.width": 200,
     "openFiles": [
     ],
     "project": "untitled.tiled-project",
+    "property.type": "float",
     "recentFiles": [
+        "new_tileset.tsx",
+        "terrain_2.tsx",
+        "lvl_01.tmx",
+        "lvl_02.tmx",
         "terrain.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",

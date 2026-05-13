@@ -1,1 +1,1 @@
-function on_click() goToScene("level_01") end
+function on_click() goToScene("level_tiled_01") end

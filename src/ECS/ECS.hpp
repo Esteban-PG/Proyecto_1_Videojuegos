@@ -171,9 +171,6 @@ void Registry::addComponent(Entity entity, TArgs&&... args) {
   TComponent newComponent(std::forward<TArgs>(args)...);
   componentPool->set(entityId, newComponent);
   entityComponentSignatures[entityId].set(componentId);
-
-  std::cout << "[REGISTRY] Added component with ID: " << componentId
-            << " to entity with ID: " << entityId << std::endl;
 }
 
 template <typename TComponent>
@@ -182,8 +179,6 @@ void Registry::removeComponent(Entity entity) {
   const int entityId = entity.getId();
 
   entityComponentSignatures[entityId].set(componentId, false);
-  std::cout << "[REGISTRY] Removed component with ID: " << componentId
-            << " from entity with ID: " << entityId << std::endl;
 }
 
 template <typename TComponent>

@@ -13,7 +13,7 @@ local nxt      = next_level    or "nitro_menu"
 
 function update()
     if isPlayerDead(this) then
-        goToScene(my_level)
+        respawnPlayer()
         return
     end
 

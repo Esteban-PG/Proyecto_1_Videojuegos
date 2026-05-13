@@ -2,5 +2,5 @@
 -- Start the game from Level 1
 
 function on_click()
-    goToScene("level_01")
+    goToScene("level_tiled_01")
 end

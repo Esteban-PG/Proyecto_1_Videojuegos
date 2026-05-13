@@ -20,6 +20,8 @@ struct PlayerComponent {
   float jumpMaxScale;   ///< Peak scale multiplier at the apex (relative to base)
   float baseScaleX;     ///< Resting X scale of the entity (restored on landing)
   float baseScaleY;     ///< Resting Y scale of the entity (restored on landing)
+  float spawnX;         ///< World X at which the player was originally placed
+  float spawnY;         ///< World Y at which the player was originally placed
   int   score;          ///< Accumulated score
   bool  isDead;         ///< Set true on lethal collision
   bool  hasWon;         ///< Set true on checkpoint contact
@@ -47,6 +49,8 @@ struct PlayerComponent {
         jumpMaxScale(maxScale),
         baseScaleX(bScaleX),
         baseScaleY(bScaleY),
+        spawnX(0.0f),
+        spawnY(0.0f),
         score(0),
         isDead(false),
         hasWon(false),

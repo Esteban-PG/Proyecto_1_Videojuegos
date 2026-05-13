@@ -47,16 +47,11 @@ Entity Registry::createEntity() {
   Entity entity(entityId);
   entity.registry = this;
   entitiesToBeAdded.insert(entity);
-
-  std::cout << "[REGISTRY] Created entity with ID: " << entityId << std::endl;
-
   return entity;
 }
 
 void Registry::destroyEntity(Entity entity) {
   entitiesToBeRemoved.insert(entity);
-  std::cout << "[REGISTRY] Marked entity with ID: " << entity.getId()
-            << " for removal" << std::endl;
 }
 
 void Registry::addEntityToSystems(Entity entity) {

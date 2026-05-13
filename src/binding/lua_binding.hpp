@@ -142,6 +142,31 @@ void stopMusic() {
 // Scene navigation
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Resetea al jugador en su punto de spawn sin recargar la escena. */
+void respawnPlayer() {
+  auto& tagSys = Game::getInstance().registry->getSystem<TagSystem>();
+  Entity p = tagSys.getEntityByTag("player");
+  if (p.getId() < 0) return;
+
+  auto& tf = p.getComponent<TransformComponent>();
+  auto& pc = p.getComponent<PlayerComponent>();
+  auto& rb = p.getComponent<RigidBodyComponent>();
+
+  // Restaurar posición al spawn original
+  tf.position = {pc.spawnX, pc.spawnY};
+  tf.scale    = {pc.baseScaleX, pc.baseScaleY};
+  tf.rotation = 0.0;
+
+  // Resetear estado del jugador
+  rb.velocity  = {0.0f, 0.0f};
+  pc.isDead    = false;
+  pc.hasWon    = false;
+  pc.isFalling = false;
+  pc.fallTimer = 0.0f;
+  pc.isJumping = false;
+  pc.jumpTimer = 0.0f;
+}
+
 /** Transition to a different scene by name (defined in scenes.lua). */
 void goToScene(const std::string& sceneName) {
   Game::getInstance().sceneManager->setNextScene(sceneName);

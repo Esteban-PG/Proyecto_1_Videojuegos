@@ -498,6 +498,21 @@ void SceneLoader::loadObjectGroup(sol::state& lua,
         e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
       }
     }
+    else if (cls == "patrol_saw") {
+      // Pasar propiedades de Tiled al script antes de cargarlo
+      lua["patrol_axis"]  = getprop("patrol_axis",  "y");
+      lua["patrol_range"] = std::stof(getprop("patrol_range", "80"));
+      lua["patrol_speed"] = std::stof(getprop("patrol_speed", "60"));
+
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<SpriteComponent>("saw_sprite", (int)w, (int)h, 0, 0, false);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("saw");
+      lua["on_click"] = sol::lua_nil;
+      lua["update"]   = sol::lua_nil;
+      lua.script_file("./assets/scripts/saw_patrol.lua");
+      e.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
+    }
     else if (cls == "score_zone") {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
       e.addComponent<BoxColliderComponent>(w, h);
@@ -526,6 +541,8 @@ void SceneLoader::loadObjectGroup(sol::state& lua,
       e.addComponent<CircleColliderComponent>(35, 71, 131);
       e.addComponent<TagComponent>("player");
       e.addComponent<PlayerComponent>(speed, rotSpeed, 0.30f, 2.0f, scaleX, scaleY);
+      e.getComponent<PlayerComponent>().spawnX = x;
+      e.getComponent<PlayerComponent>().spawnY = y;
       e.addComponent<NitroComponent>(0.5f, 0.5f);
       lua["on_click"] = sol::lua_nil;
       lua["update"]   = sol::lua_nil;

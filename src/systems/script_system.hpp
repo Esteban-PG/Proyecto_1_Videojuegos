@@ -59,8 +59,9 @@ class ScriptSystem : public System {
     lua.set_function("stopMusic", stopMusic);
 
     // ── Scene ─────────────────────────────────────────────────────────────
-    lua.set_function("goToScene",  goToScene);
-    lua.set_function("quitGame",   quitGame);
+    lua.set_function("goToScene",     goToScene);
+    lua.set_function("quitGame",      quitGame);
+    lua.set_function("respawnPlayer", respawnPlayer);
   }
 
   /** Execute each entity's Lua update() function. */
