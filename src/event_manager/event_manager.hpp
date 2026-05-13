@@ -10,12 +10,19 @@
 
 #include "event.hpp"
 
+/**
+ * @brief Type-erased interface for a single event subscription.
+ *
+ * Concrete instantiations are created by EventCallback<TOwner,TEvent>.
+ * EventManager stores a list of these per event type.
+ */
 class IEventCallback {
  private:
   virtual void call(Event& e) = 0;
 
  public:
   virtual ~IEventCallback() = default;
+  /** @brief Dispatch the event to the concrete callback. */
   void execute(Event& e) { call(e); }
 };
 
@@ -37,6 +44,21 @@ class EventCallback : public IEventCallback {
 
 typedef std::list<std::unique_ptr<IEventCallback>> HandlerList;
 
+/**
+ * @brief Publish-subscribe event bus for decoupled system communication.
+ *
+ * Systems subscribe to specific event types at the start of each frame
+ * (subscriptions are cleared on reset() so stale handlers never fire).
+ * Events are emitted synchronously — all handlers run before emitEvent returns.
+ *
+ * Usage:
+ * @code
+ *   // Subscribe (called each frame before update):
+ *   eventManager->subscribeToEvent<CollisionEvent>(this, &MySystem::onCollision);
+ *   // Emit:
+ *   eventManager->emitEvent<CollisionEvent>(entityA, entityB);
+ * @endcode
+ */
 class EventManager {
  private:
   std::map<std::type_index, std::unique_ptr<HandlerList>> subscribers;
@@ -50,8 +72,16 @@ class EventManager {
     std::cout << "[EVENT MANAGER] Destructor called" << std::endl;
   }
 
+  /** @brief Clear all subscriptions (call at the start of each frame). */
   void reset() { subscribers.clear(); }
 
+  /**
+   * @brief Subscribe a member function to an event type.
+   * @tparam TEvent    Event type to listen for
+   * @tparam TOwner    Class that owns the callback method
+   * @param ownerInstance   Pointer to the listener object
+   * @param callbackFunction Member function pointer called when the event fires
+   */
   template <typename TEvent, typename TOwner>
   void subscribeToEvent(TOwner* ownerInstance,
                         void (TOwner::*callbackFunction)(TEvent&)) {
@@ -63,6 +93,12 @@ class EventManager {
     subscribers[typeid(TEvent)]->push_back(std::move(subscriber));
   }
 
+  /**
+   * @brief Construct and dispatch an event to all current subscribers.
+   * @tparam TEvent  Event type to emit
+   * @tparam TArgs   Constructor argument types forwarded to TEvent
+   * @param args     Arguments forwarded to the TEvent constructor
+   */
   template <typename TEvent, typename... TArgs>
   void emitEvent(TArgs&&... args) {
     auto handlers = subscribers[typeid(TEvent)].get();

@@ -16,7 +16,11 @@
 // Input
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Returns true while the named action's key(s) are held. */
+/**
+ * @brief Check whether a named input action is currently held.
+ * @param action Action name registered in the scene (e.g. "accelerate")
+ * @return True while any key bound to @p action is pressed
+ */
 bool isActionActivated(const std::string& action) {
   return Game::getInstance().controllerManager->isActionActivated(action);
 }
@@ -25,14 +29,23 @@ bool isActionActivated(const std::string& action) {
 // RigidBody helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Override an entity's velocity directly (pixels/second). */
+/**
+ * @brief Set an entity's velocity directly.
+ * @param entity Target entity (must have RigidBodyComponent)
+ * @param x Horizontal velocity in pixels/second
+ * @param y Vertical velocity in pixels/second
+ */
 void setVelocity(Entity entity, float x, float y) {
   auto& rb = entity.getComponent<RigidBodyComponent>();
   rb.velocity.x = x;
   rb.velocity.y = y;
 }
 
-/** Return (vx, vy) for the entity. */
+/**
+ * @brief Get an entity's current velocity.
+ * @param entity Target entity (must have RigidBodyComponent)
+ * @return (vx, vy) in pixels/second
+ */
 std::tuple<float, float> getVelocity(Entity entity) {
   const auto& rb = entity.getComponent<RigidBodyComponent>();
   return {rb.velocity.x, rb.velocity.y};
@@ -42,25 +55,42 @@ std::tuple<float, float> getVelocity(Entity entity) {
 // Transform helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Return (x, y) world position of an entity (top-left corner of its AABB). */
+/**
+ * @brief Get an entity's world position (top-left of its bounding box).
+ * @param entity Target entity (must have TransformComponent)
+ * @return (x, y) world position in pixels
+ */
 std::tuple<float, float> getEntityPosition(Entity entity) {
   const auto& tf = entity.getComponent<TransformComponent>();
   return {tf.position.x, tf.position.y};
 }
 
-/** Teleport an entity to world position (x, y). */
+/**
+ * @brief Teleport an entity to a world position.
+ * @param entity Target entity (must have TransformComponent)
+ * @param x World X in pixels
+ * @param y World Y in pixels
+ */
 void setEntityPosition(Entity entity, float x, float y) {
   auto& tf = entity.getComponent<TransformComponent>();
   tf.position.x = x;
   tf.position.y = y;
 }
 
-/** Return the entity's current rotation in degrees. */
+/**
+ * @brief Get the entity's current rotation.
+ * @param entity Target entity (must have TransformComponent)
+ * @return Rotation in degrees (clockwise)
+ */
 float getEntityRotation(Entity entity) {
   return static_cast<float>(entity.getComponent<TransformComponent>().rotation);
 }
 
-/** Set the entity's rotation in degrees. */
+/**
+ * @brief Set the entity's rotation.
+ * @param entity Target entity (must have TransformComponent)
+ * @param deg Rotation in degrees (clockwise)
+ */
 void setEntityRotation(Entity entity, float deg) {
   entity.getComponent<TransformComponent>().rotation = deg;
 }
@@ -69,7 +99,10 @@ void setEntityRotation(Entity entity, float deg) {
 // Player-specific helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Return (x, y) of the entity tagged "player", or (0, 0) if not found. */
+/**
+ * @brief Get the world position of the entity tagged "player".
+ * @return (x, y) world position, or (0, 0) if no player entity exists
+ */
 std::tuple<float, float> getPlayerPosition() {
   auto& tagSys = Game::getInstance().registry->getSystem<TagSystem>();
   Entity p = tagSys.getEntityByTag("player");
@@ -78,19 +111,30 @@ std::tuple<float, float> getPlayerPosition() {
   return {tf.position.x, tf.position.y};
 }
 
-/** True if the player entity's PlayerComponent.isDead flag is set. */
+/**
+ * @brief Check whether the player is dead.
+ * @param entity Player entity handle
+ * @return True if PlayerComponent::isDead is set
+ */
 bool isPlayerDead(Entity entity) {
   if (!entity.hasComponent<PlayerComponent>()) return false;
   return entity.getComponent<PlayerComponent>().isDead;
 }
 
-/** True if the player entity's PlayerComponent.hasWon flag is set. */
+/**
+ * @brief Check whether the player has reached the checkpoint.
+ * @param entity Player entity handle
+ * @return True if PlayerComponent::hasWon is set
+ */
 bool isPlayerWon(Entity entity) {
   if (!entity.hasComponent<PlayerComponent>()) return false;
   return entity.getComponent<PlayerComponent>().hasWon;
 }
 
-/** Add points to the player entity's score (found via TagSystem). */
+/**
+ * @brief Add @p value points to the player's score.
+ * @param value Points to add (may be negative)
+ */
 void addScore(int value) {
   auto& tagSys = Game::getInstance().registry->getSystem<TagSystem>();
   Entity p = tagSys.getEntityByTag("player");
@@ -99,7 +143,10 @@ void addScore(int value) {
   }
 }
 
-/** Return the player's current score. */
+/**
+ * @brief Get the player's accumulated score.
+ * @return Current score, or 0 if no player entity exists
+ */
 int getScore() {
   auto& tagSys = Game::getInstance().registry->getSystem<TagSystem>();
   Entity p = tagSys.getEntityByTag("player");
@@ -112,7 +159,11 @@ int getScore() {
 // Text helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Replace the text displayed by a TextComponent entity. */
+/**
+ * @brief Update the string rendered by a TextComponent.
+ * @param entity Target entity (must have TextComponent)
+ * @param text   New text string to display
+ */
 void setTextContent(Entity entity, const std::string& text) {
   if (entity.hasComponent<TextComponent>()) {
     entity.getComponent<TextComponent>().text = text;
@@ -123,17 +174,23 @@ void setTextContent(Entity entity, const std::string& text) {
 // Audio helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Play a loaded sound-effect by its asset ID. */
+/**
+ * @brief Play a one-shot sound effect.
+ * @param id Asset ID registered with AudioManager::addSFX()
+ */
 void playSFX(const std::string& id) {
   Game::getInstance().audioManager->playSFX(id);
 }
 
-/** Start (or restart) a music track by its asset ID. */
+/**
+ * @brief Start looping a music track.
+ * @param id Asset ID registered with AudioManager::addMusic()
+ */
 void playMusic(const std::string& id) {
   Game::getInstance().audioManager->playMusic(id);
 }
 
-/** Fade out any currently playing music. */
+/** @brief Fade out any currently playing music track. */
 void stopMusic() {
   Game::getInstance().audioManager->stopMusic();
 }
@@ -142,7 +199,12 @@ void stopMusic() {
 // Scene navigation
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Resetea al jugador en su punto de spawn sin recargar la escena. */
+/**
+ * @brief Teleport the player back to its spawn point and reset all state.
+ *
+ * Does NOT reload the scene — position, velocity, isDead, isFalling and
+ * isJumping are all reset in-place so the level continues running.
+ */
 void respawnPlayer() {
   auto& tagSys = Game::getInstance().registry->getSystem<TagSystem>();
   Entity p = tagSys.getEntityByTag("player");
@@ -167,13 +229,16 @@ void respawnPlayer() {
   pc.jumpTimer = 0.0f;
 }
 
-/** Transition to a different scene by name (defined in scenes.lua). */
+/**
+ * @brief Transition to a named scene at the end of the current frame.
+ * @param sceneName Name registered in scenes.lua (e.g. "nitro_menu")
+ */
 void goToScene(const std::string& sceneName) {
   Game::getInstance().sceneManager->setNextScene(sceneName);
   Game::getInstance().sceneManager->stopScene();
 }
 
-/** Exit the application cleanly from a Lua script. */
+/** @brief Exit the application cleanly from a Lua script. */
 void quitGame() {
   Game::getInstance().quit();
 }

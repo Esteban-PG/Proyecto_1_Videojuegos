@@ -15,6 +15,13 @@
 #include "../event_manager/event_manager.hpp"
 #include "../events/click_event.hpp"
 
+/**
+ * @brief Handles click detection for entities with ClickableComponent + TextComponent.
+ *
+ * Subscribes to ClickEvent each frame. When a click lands inside an entity's
+ * text bounding box, it calls the entity's ScriptComponent::onClick Lua function.
+ * Used for menu buttons and any other interactive UI elements.
+ */
 class UISystem : public System {
  public:
   UISystem() {
@@ -23,6 +30,7 @@ class UISystem : public System {
     requireComponent<TransformComponent>();
   }
 
+  /** @brief Register onClickEvent as a handler for ClickEvents this frame. */
   void subscribeToClickEvent(std::unique_ptr<EventManager>& eventManager) {
     eventManager->subscribeToEvent<ClickEvent, UISystem>(
         this, &UISystem::onClickEvent);

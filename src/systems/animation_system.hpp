@@ -7,6 +7,13 @@
 #include "../components/animation_component.hpp"
 #include "../components/sprite_component.hpp"
 
+/**
+ * @brief Advances sprite-sheet frame animations each tick.
+ *
+ * Reads AnimationComponent::frameSpeedRate and writes the resulting
+ * frame index into SpriteComponent::srcRect.x so the renderer shows
+ * the correct column of the sprite sheet.
+ */
 class AnimationSystem : public System {
  public:
   AnimationSystem() {
@@ -14,6 +21,7 @@ class AnimationSystem : public System {
     requireComponent<SpriteComponent>();
   }
 
+  /** @brief Advance all active animations by one frame tick. */
   void update() {
     for (Entity entity : getEntities()) {
       auto& animation = entity.getComponent<AnimationComponent>();

@@ -5,6 +5,13 @@
 #include "../components/rigid_body_component.hpp"
 #include "../components/transform_component.hpp"
 
+/**
+ * @brief Integrates RigidBodyComponent velocity into TransformComponent position.
+ *
+ * Applies position += velocity * deltaTime each frame for every entity
+ * that has both a TransformComponent and a RigidBodyComponent.
+ * Car-specific velocity is set by CarMovementSystem before this runs.
+ */
 class MovementSystem : public System {
  public:
   MovementSystem() {
@@ -13,6 +20,10 @@ class MovementSystem : public System {
     requireComponent<RigidBodyComponent>();
   }
 
+  /**
+   * @brief Integrate velocity into position for all moving entities.
+   * @param deltaTime Seconds elapsed since the last frame
+   */
   void update(float deltaTime) {
     for (Entity entity : getEntities()) {
       auto& transform = entity.getComponent<TransformComponent>();

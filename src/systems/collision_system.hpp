@@ -10,6 +10,15 @@
 #include "../event_manager/event_manager.hpp"
 #include "../events/collision_event.hpp"
 
+/**
+ * @brief Detects circle-circle overlaps and emits CollisionEvents.
+ *
+ * Operates on all entities with CircleColliderComponent + TransformComponent.
+ * Runs an O(n²) sweep each frame and emits a CollisionEvent for every
+ * overlapping pair. DamageSystem processes those events to apply gameplay effects.
+ *
+ * Center convention: center = position - (width/2 * scale, height/2 * scale).
+ */
 class CollisionSystem : public System {
  public:
   CollisionSystem() {
@@ -17,6 +26,10 @@ class CollisionSystem : public System {
     requireComponent<TransformComponent>();
   }
 
+  /**
+   * @brief Run one collision pass and emit events for all overlapping pairs.
+   * @param eventManager Event bus used to emit CollisionEvent instances
+   */
   void update(std::unique_ptr<EventManager>& eventManager) {
     auto entities = getEntities();
     for (auto i = entities.begin(); i != entities.end(); ++i) {
@@ -54,6 +67,13 @@ class CollisionSystem : public System {
       }
     }
   }
+  /**
+   * @brief @return True if two circles with the given radii and centres overlap.
+   * @param aRadius Scaled radius of entity A
+   * @param bRadius Scaled radius of entity B
+   * @param aCenterPosition World-space centre of entity A
+   * @param bCenterPosition World-space centre of entity B
+   */
   bool checkCircularCollision(int aRadius, int bRadius,
                               glm::vec2 aCenterPosition,
                               glm::vec2 bCenterPosition) {

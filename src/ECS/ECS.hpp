@@ -18,28 +18,42 @@ const unsigned int MAX_COMPONENTS = 64;
 // Signature
 typedef std::bitset<MAX_COMPONENTS> Signature;
 
+/** @brief Base for the Component<T> CRTP helper — holds the shared ID counter. */
 struct IComponent {
  protected:
   static int nextId;
 };
+
+/**
+ * @brief CRTP helper that assigns a unique integer ID to each component type.
+ * @tparam TComponent The concrete component type
+ */
 template <typename TComponent>
 class Component : public IComponent {
-  // Component data and methods
  public:
+  /** @brief @return Stable integer ID for TComponent, assigned on first call. */
   static int getId() {
     static int id = nextId++;
     return id;
   }
 };
 
+/**
+ * @brief Lightweight handle to a game object — just an integer ID.
+ *
+ * Entities do not store components directly; Registry maps the ID to
+ * component pools and system membership. An entity with id=-1 is invalid.
+ */
 class Entity {
  private:
   int id;
 
  public:
-  Entity() : id(-1) {}        ///< Default-constructs an invalid entity (id=-1)
-  Entity(int id) : id(id) {}
-  int getId() const;
+  Entity() : id(-1) {}        ///< Default-constructs an invalid entity (id = -1)
+  explicit Entity(int id) : id(id) {}
+  /** @brief @return The entity's unique integer identifier. */
+  int  getId() const;
+  /** @brief Schedule this entity for removal at the next Registry::update(). */
   void kill();
 
   bool operator==(const Entity& other) const { return id == other.id; }
@@ -50,39 +64,62 @@ class Entity {
 
   bool operator>(const Entity& other) const { return id > other.id; }
 
+  /** @brief Construct and attach a component to this entity. */
   template <typename TComponent, typename... TArgs>
   void addComponent(TArgs&&... args);
-
+  /** @brief Detach a component from this entity. */
   template <typename TComponent>
   void removeComponent();
-
+  /** @brief @return True if this entity has TComponent attached. */
   template <typename TComponent>
   bool hasComponent() const;
-
+  /** @brief @return Reference to this entity's TComponent. */
   template <typename TComponent>
   TComponent& getComponent() const;
 
   class Registry* registry;
 };
 
+/**
+ * @brief Base class for all ECS systems.
+ *
+ * A system declares which component types it needs via requireComponent<T>().
+ * Registry automatically adds/removes entities from each system whenever their
+ * component set changes so that getEntities() always returns the right set.
+ */
 class System {
  private:
-  Signature componentSignature;
-  std::vector<Entity> entities;
+  Signature componentSignature;   ///< Bitmask of required component IDs
+  std::vector<Entity> entities;   ///< Entities currently matching this system
 
  public:
   System() = default;
   ~System() = default;
 
+  /** @brief Called by Registry when a matching entity is created. */
   void addEntity(Entity entity);
+  /** @brief Called by Registry when an entity no longer matches. */
   void removeEntity(Entity entity);
+  /** @brief @return All entities currently tracked by this system. */
   std::vector<Entity> getEntities() const;
+  /** @brief @return The component bitmask this system requires. */
   const Signature& getComponentSignature() const;
 
+  /**
+   * @brief Declare that this system requires TComponent on every entity.
+   * @tparam TComponent Component type that must be present
+   */
   template <typename TComponent>
   void requireComponent();
 };
 
+/**
+ * @brief Central ECS registry — creates entities and manages components/systems.
+ *
+ * Entities are integer IDs. Components are stored in typed Pool<T> arrays indexed
+ * by entity ID. Systems are matched against each entity's component Signature
+ * at Registry::update() time (deferred add/remove for safe in-loop modification).
+ */
 class Registry {
  private:
   int numEntity = 0;
@@ -100,43 +137,45 @@ class Registry {
   Registry();
   ~Registry();
 
+  /** @brief Flush deferred entity additions and removals into systems. */
   void update();
 
-  // Entity management
+  /** @brief Create a new entity and return its handle. */
   Entity createEntity();
+  /** @brief Schedule @p entity for removal at the next update(). */
   void destroyEntity(Entity entity);
 
-  // Component management
+  /** @brief Attach a component to @p entity, constructing it with @p args. */
   template <typename TComponent, typename... TArgs>
   void addComponent(Entity entity, TArgs&&... args);
-
+  /** @brief Detach TComponent from @p entity. */
   template <typename TComponent>
   void removeComponent(Entity entity);
-
+  /** @brief @return True if @p entity has TComponent. */
   template <typename TComponent>
   bool hasComponent(Entity entity) const;
-
+  /** @brief @return Reference to TComponent on @p entity. */
   template <typename TComponent>
   TComponent& getComponent(Entity entity) const;
 
-  // System management
+  /** @brief Instantiate and register a system of type TSystem. */
   template <typename TSystem, typename... TArgs>
   void addSystem(TArgs&&... args);
-
+  /** @brief Remove and destroy the TSystem instance. */
   template <typename TSystem>
   void removeSystem();
-
+  /** @brief @return True if TSystem is registered. */
   template <typename TSystem>
   bool hasSystem() const;
-
+  /** @brief @return Reference to the registered TSystem. */
   template <typename TSystem>
   TSystem& getSystem() const;
 
-  // Add and remove entities from systems
+  /** @brief Add @p entity to every system whose signature it satisfies. */
   void addEntityToSystems(Entity entity);
+  /** @brief Remove @p entity from all systems. */
   void removeEntityFromSystems(Entity entity);
-
-  // Reset the registry (remove all entities and components)
+  /** @brief Destroy all entities and reset the registry to empty state. */
   void clearAllEntities();
 };
 

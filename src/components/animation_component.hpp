@@ -3,12 +3,18 @@
 
 #include <SDL2/SDL.h>
 
+/**
+ * @brief Drives sprite-sheet frame animation for an entity.
+ *
+ * AnimationSystem advances currentFrame each tick based on frameSpeedRate
+ * and writes the result into SpriteComponent::srcRect.x.
+ */
 struct AnimationComponent {
-  int numberOfFrames;
-  int currentFrame;
-  int frameSpeedRate;  // Time in milliseconds between frame changes
-  bool isLoop;
-  int startTime;
+  int  numberOfFrames; ///< Total frames in the animation strip
+  int  currentFrame;   ///< Currently displayed frame index (0-based)
+  int  frameSpeedRate; ///< Frames per second
+  bool isLoop;         ///< Whether the animation wraps around at the last frame
+  int  startTime;      ///< SDL_GetTicks() timestamp when animation began
 
   AnimationComponent(int numberOfFrames = 1, int frameSpeedRate = 1,
                      bool isLoop = true)
