@@ -92,8 +92,15 @@ class BoxCollisionSystem : public System {
     if (tag == "wall") {
       resolveWallBounce(playerEntity, tf, pc, px, py, pw, ph, ex, ey, ew, eh);
     } else if (tag == "gap") {
-      if (!pc.isJumping) {
-        pc.isDead = true;
+      if (!pc.isJumping && !pc.isFalling && !pc.isDead) {
+        pc.isFalling   = true;
+        pc.fallTimer   = pc.fallDuration;
+        pc.fallHalfW   = pw * 0.5f;
+        pc.fallHalfH   = ph * 0.5f;
+        pc.fallStartX  = px + pc.fallHalfW;
+        pc.fallStartY  = py + pc.fallHalfH;
+        pc.fallTargetX = ex + ew * 0.5f;
+        pc.fallTargetY = ey + eh * 0.5f;
         Game::getInstance().audioManager->playSFX("death");
       }
     } else if (tag == "ramp") {
@@ -105,12 +112,18 @@ class BoxCollisionSystem : public System {
           pc.isJumping = true;
           pc.jumpTimer = pc.jumpDuration;
           Game::getInstance().audioManager->playSFX("jump");
+          Game::getInstance().triggerShake(0.08f, 5.0f);
         }
       }
     } else if (tag == "checkpoint") {
       if (!pc.hasWon) {
         pc.hasWon = true;
         Game::getInstance().audioManager->playSFX("win");
+      }
+    } else if (tag == "saw") {
+      if (!pc.isDead && !pc.isFalling) {
+        pc.isDead = true;
+        Game::getInstance().audioManager->playSFX("death");
       }
     }
   }

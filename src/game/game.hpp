@@ -60,14 +60,19 @@ class Game {
   void update();
   void render();
   void renderPauseOverlay();
-  void updateCamera();
+  void updateCamera(float dt);
   Game();
   ~Game();
 
  public:
-  SDL_Renderer* renderer = nullptr;
+  SDL_Renderer* renderer      = nullptr;
+  int           mapWidth      = 0;
+  int           mapHeight     = 0;
+  float         shakeTimer    = 0.0f;
+  float         shakeAmplitude = 0.0f;
 
   static Game& getInstance();
+  void triggerShake(float duration, float amplitude);
   void init();
   void run();
   void destroy();

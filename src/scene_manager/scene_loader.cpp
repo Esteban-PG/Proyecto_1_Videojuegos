@@ -2,6 +2,10 @@
 
 #include <glm/glm.hpp>
 #include <iostream>
+#include <sstream>
+
+#include "../game/game.hpp"
+#include "tinyxml2/tinyxml2.h"
 
 #include "../components/animation_component.hpp"
 #include "../components/box_collider_component.hpp"
@@ -66,6 +70,11 @@ void SceneLoader::loadScene(
   sol::optional<sol::table> hasButtons = scene["buttons"];
   if (hasButtons != sol::nullopt)
     loadButtons(scene["buttons"], controllerManager);
+
+  // ── Map (TMX) ─────────────────────────────────────────────────────────────
+  sol::optional<sol::table> hasMap = scene["map"];
+  if (hasMap != sol::nullopt)
+    loadMap(lua, scene["map"], registry, renderer, assetManager);
 
   // ── Entities ──────────────────────────────────────────────────────────────
   sol::optional<sol::table> hasEntities = scene["entities"];
@@ -307,5 +316,226 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
     }
 
     ++i;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// loadMap
+// ─────────────────────────────────────────────────────────────────────────────
+
+void SceneLoader::loadMap(sol::state& lua, const sol::table& map,
+                          std::unique_ptr<Registry>& registry,
+                          SDL_Renderer* renderer,
+                          std::unique_ptr<AssetManager>& assetManager) {
+  sol::optional<std::string> hasPath = map["path"];
+  if (hasPath == sol::nullopt) {
+    std::cerr << "[SCENE LOADER] loadMap: missing 'path' in map table." << std::endl;
+    return;
+  }
+
+  std::string path = map["path"];
+
+  tinyxml2::XMLDocument xmlDoc;
+  if (xmlDoc.LoadFile(path.c_str()) != tinyxml2::XML_SUCCESS) {
+    std::cerr << "[SCENE LOADER] loadMap: failed to load TMX file: " << path << std::endl;
+    return;
+  }
+
+  tinyxml2::XMLElement* xmlRoot = xmlDoc.RootElement();
+
+  int tWidth = 0, tHeight = 0, mWidth = 0, mHeight = 0;
+  xmlRoot->QueryIntAttribute("tilewidth",  &tWidth);
+  xmlRoot->QueryIntAttribute("tileheight", &tHeight);
+  xmlRoot->QueryIntAttribute("width",      &mWidth);
+  xmlRoot->QueryIntAttribute("height",     &mHeight);
+
+  Game::getInstance().mapWidth  = tWidth  * mWidth;
+  Game::getInstance().mapHeight = tHeight * mHeight;
+
+  // ── Leer el tileset externo (.tsx) para obtener columnas e imagen ──────────
+  int tilesetColumns = mWidth; // fallback si no se puede leer el TSX
+  std::string tmxDir = path.substr(0, path.find_last_of("/\\") + 1);
+
+  tinyxml2::XMLElement* tilesetEl = xmlRoot->FirstChildElement("tileset");
+  if (tilesetEl) {
+    const char* source = tilesetEl->Attribute("source");
+    if (source) {
+      std::string tsxPath = tmxDir + source;
+      tinyxml2::XMLDocument tsxDoc;
+      if (tsxDoc.LoadFile(tsxPath.c_str()) == tinyxml2::XML_SUCCESS) {
+        tinyxml2::XMLElement* tsxRoot = tsxDoc.RootElement();
+        tsxRoot->QueryIntAttribute("columns", &tilesetColumns);
+
+        tinyxml2::XMLElement* imgEl = tsxRoot->FirstChildElement("image");
+        if (imgEl) {
+          const char* imgSrc = imgEl->Attribute("source");
+          if (imgSrc) {
+            std::string imgPath = tmxDir + imgSrc;
+            assetManager->addTexture(renderer, "tilemap", imgPath);
+          }
+        }
+      }
+    }
+  }
+
+  // ── Tile layers ───────────────────────────────────────────────────────────
+  for (auto* xmlLayer = xmlRoot->FirstChildElement("layer");
+       xmlLayer != nullptr;
+       xmlLayer = xmlLayer->NextSiblingElement("layer")) {
+    loadLayer(registry, xmlLayer, tWidth, tHeight, mWidth, tilesetColumns);
+  }
+
+  // ── Object groups (paredes, obstáculos, jugador, etc.) ────────────────────
+  for (auto* objGroup = xmlRoot->FirstChildElement("objectgroup");
+       objGroup != nullptr;
+       objGroup = objGroup->NextSiblingElement("objectgroup")) {
+    loadObjectGroup(lua, registry, objGroup);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// loadLayer  (tile layer)
+// ─────────────────────────────────────────────────────────────────────────────
+
+void SceneLoader::loadLayer(std::unique_ptr<Registry>& registry,
+                            tinyxml2::XMLElement* xmlLayer,
+                            int tWidth, int tHeight, int mWidth,
+                            int tilesetColumns) {
+  tinyxml2::XMLElement* dataEl = xmlLayer->FirstChildElement("data");
+  if (!dataEl) return;
+
+  const char* rawData = dataEl->GetText();
+  if (!rawData) return;
+
+  std::istringstream stream(rawData);
+  std::string token;
+  int col = 0, row = 0;
+
+  while (std::getline(stream, token, ',')) {
+    token.erase(0, token.find_first_not_of(" \t\r\n"));
+    if (token.empty()) continue;
+    int tileId = std::stoi(token);
+
+    if (tileId != 0) {
+      // srcX/srcY se calculan sobre las columnas del tileset, no del mapa
+      int srcX = ((tileId - 1) % tilesetColumns) * tWidth;
+      int srcY = ((tileId - 1) / tilesetColumns) * tHeight;
+
+      Entity tile = registry->createEntity();
+      tile.addComponent<TransformComponent>(
+          glm::vec2(col * tWidth, row * tHeight),
+          glm::vec2(1.0f, 1.0f),
+          0.0);
+      tile.addComponent<SpriteComponent>("tilemap", tWidth, tHeight, srcX, srcY, false);
+    }
+
+    col++;
+    if (col >= mWidth) { col = 0; row++; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// loadObjectGroup  (Object Layer de Tiled → entidades ECS)
+// Clases soportadas: wall, ramp, gap, saw, score_zone, checkpoint, player_spawn
+// ─────────────────────────────────────────────────────────────────────────────
+
+void SceneLoader::loadObjectGroup(sol::state& lua,
+                                  std::unique_ptr<Registry>& registry,
+                                  tinyxml2::XMLElement* objGroup) {
+  for (auto* obj = objGroup->FirstChildElement("object");
+       obj != nullptr;
+       obj = obj->NextSiblingElement("object")) {
+
+    const char* classAttr = obj->Attribute("class");
+    if (!classAttr) classAttr = obj->Attribute("type"); // compatibilidad Tiled < 1.9
+    if (!classAttr) continue;
+    std::string cls = classAttr;
+
+    float x = 0, y = 0, w = 16, h = 16;
+    obj->QueryFloatAttribute("x",      &x);
+    obj->QueryFloatAttribute("y",      &y);
+    obj->QueryFloatAttribute("width",  &w);
+    obj->QueryFloatAttribute("height", &h);
+
+    // Leer custom properties del objeto
+    auto getprop = [&](const std::string& name, const std::string& def) -> std::string {
+      auto* propsEl = obj->FirstChildElement("properties");
+      if (!propsEl) return def;
+      for (auto* p = propsEl->FirstChildElement("property"); p; p = p->NextSiblingElement("property")) {
+        const char* n = p->Attribute("name");
+        const char* v = p->Attribute("value");
+        if (n && v && std::string(n) == name) return v;
+      }
+      return def;
+    };
+
+    Entity e = registry->createEntity();
+
+    if (cls == "wall") {
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("wall");
+    }
+    else if (cls == "ramp") {
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("ramp");
+    }
+    else if (cls == "gap") {
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("gap");
+    }
+    else if (cls == "saw") {
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("saw");
+      if (getprop("spin", "false") == "true") {
+        lua["on_click"] = sol::lua_nil;
+        lua["update"]   = sol::lua_nil;
+        lua.script_file("./assets/scripts/saw_spin.lua");
+        sol::function updateFn = lua["update"];
+        e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
+      }
+    }
+    else if (cls == "score_zone") {
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("score_zone");
+      lua["on_click"] = sol::lua_nil;
+      lua["update"]   = sol::lua_nil;
+      lua.script_file("./assets/scripts/score_zone.lua");
+      sol::function updateFn = lua["update"];
+      e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
+    }
+    else if (cls == "checkpoint") {
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("checkpoint");
+    }
+    else if (cls == "player_spawn") {
+      float speed    = std::stof(getprop("base_speed",      "220"));
+      float rotSpeed = std::stof(getprop("rotation_speed",  "130"));
+      float scaleX   = std::stof(getprop("scale",           "0.35"));
+      float scaleY   = scaleX;
+
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(scaleX, scaleY), 0.0);
+      e.addComponent<SpriteComponent>("car_yellow_sprite", 71, 131, 0, 0, false);
+      e.addComponent<RigidBodyComponent>(glm::vec2(0, 0));
+      e.addComponent<BoxColliderComponent>(71, 131);
+      e.addComponent<CircleColliderComponent>(35, 71, 131);
+      e.addComponent<TagComponent>("player");
+      e.addComponent<PlayerComponent>(speed, rotSpeed, 0.30f, 2.0f, scaleX, scaleY);
+      e.addComponent<NitroComponent>(0.5f, 0.5f);
+      lua["on_click"] = sol::lua_nil;
+      lua["update"]   = sol::lua_nil;
+      lua.script_file("./assets/scripts/player_car.lua");
+      sol::function updateFn = lua["update"];
+      e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
+    }
+    else {
+      // Clase desconocida: liberar entidad vacía sin error fatal
+      registry->destroyEntity(e);
+    }
   }
 }

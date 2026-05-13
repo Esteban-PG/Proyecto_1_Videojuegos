@@ -11,7 +11,8 @@ SRC = src/*.cpp \
       src/asset_manager/*.cpp \
       src/audio_manager/*.cpp \
       src/controller_manager/*.cpp \
-      src/scene_manager/*.cpp
+      src/scene_manager/*.cpp \
+      libs/tinyxml2/tinyxml2.cpp
 
 LFLAGS = -L/opt/homebrew/lib \
           -L/opt/homebrew/Cellar/lua@5.4/5.4.8/lib \

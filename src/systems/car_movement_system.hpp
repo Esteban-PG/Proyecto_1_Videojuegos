@@ -58,6 +58,34 @@ class CarMovementSystem : public System {
         continue;
       }
 
+      // ── Fall animation (gap) ──────────────────────────────────────────────
+      if (player.isFalling) {
+        body.velocity = {0.0f, 0.0f};
+        player.fallTimer -= dt;
+        if (player.fallTimer <= 0.0f) {
+          player.isFalling = false;
+          player.fallTimer = 0.0f;
+          player.isDead    = true;
+          transform.scale  = {player.baseScaleX, player.baseScaleY};
+        } else {
+          const float shrink   = player.fallTimer / player.fallDuration; // 1→0
+          const float progress = 1.0f - shrink;                          // 0→1
+
+          // Centro del carro se desliza hacia el centro del gap
+          const float cx = player.fallStartX + (player.fallTargetX - player.fallStartX) * progress;
+          const float cy = player.fallStartY + (player.fallTargetY - player.fallStartY) * progress;
+
+          // Escala encoge hacia 0
+          transform.scale = {player.baseScaleX * shrink,
+                             player.baseScaleY * shrink};
+
+          // Top-left = centro actual - mitad del tamaño encogido
+          transform.position.x = cx - player.fallHalfW * shrink;
+          transform.position.y = cy - player.fallHalfH * shrink;
+        }
+        continue;
+      }
+
       // ── Jump timer + scale effect ─────────────────────────────────────────
       if (player.isJumping) {
         player.jumpTimer -= dt;
@@ -66,6 +94,7 @@ class CarMovementSystem : public System {
           player.isJumping = false;
           player.jumpTimer = 0.0f;
           transform.scale  = {player.baseScaleX, player.baseScaleY};
+          Game::getInstance().triggerShake(0.10f, 5.0f);
         } else {
           // Sine-wave scale relative to base: peaks at jumpMaxScale × base.
           // sin curve ensures smooth take-off and landing transitions.

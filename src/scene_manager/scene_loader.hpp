@@ -10,6 +10,7 @@
 #include "../ECS/ECS.hpp"
 #include "../asset_manager/asset_manager.hpp"
 #include "../controller_manager/controller_manager.hpp"
+#include "tinyxml2/tinyxml2.h"
 
 /**
  * @brief Parses and instantiates a Lua scene definition.
@@ -43,6 +44,17 @@ class SceneLoader {
                    std::unique_ptr<ControllerManager>& controllerManager);
   void loadEntities(sol::state& lua, const sol::table& entities,
                     std::unique_ptr<Registry>& registry);
+
+  void loadMap(sol::state& lua, const sol::table& map,
+               std::unique_ptr<Registry>& registry,
+               SDL_Renderer* renderer,
+               std::unique_ptr<AssetManager>& assetManager);
+  void loadLayer(std::unique_ptr<Registry>& registry,
+                 tinyxml2::XMLElement* xmlLayer,
+                 int tWidth, int tHeight, int mWidth, int tilesetColumns);
+  void loadObjectGroup(sol::state& lua,
+                       std::unique_ptr<Registry>& registry,
+                       tinyxml2::XMLElement* objGroup);
 
  public:
   SceneLoader();

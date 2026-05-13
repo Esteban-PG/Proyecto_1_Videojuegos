@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 
 #include "../events/click_event.hpp"
 #include "../systems/animation_system.hpp"
@@ -171,7 +172,12 @@ void Game::processInput() {
 // Camera update (called at end of update())
 // ─────────────────────────────────────────────────────────────────────────────
 
-void Game::updateCamera() {
+void Game::triggerShake(float duration, float amplitude) {
+  shakeTimer     = duration;
+  shakeAmplitude = amplitude;
+}
+
+void Game::updateCamera(float dt) {
   auto& tagSys = registry->getSystem<TagSystem>();
   Entity player = tagSys.getEntityByTag("player");
   if (player.getId() < 0) return;
@@ -181,7 +187,6 @@ void Game::updateCamera() {
   float halfW = 15.0f;
   float halfH = 25.0f;
 
-  // Try to get the actual sprite dimensions for better centering
   if (player.hasComponent<SpriteComponent>()) {
     const auto& sp = player.getComponent<SpriteComponent>();
     halfW = (sp.width  * static_cast<float>(tf.scale.x)) * 0.5f;
@@ -190,6 +195,18 @@ void Game::updateCamera() {
 
   cameraX = tf.position.x + halfW - windowWidth  * 0.5f;
   cameraY = tf.position.y + halfH - windowHeight * 0.5f;
+
+  // Camera shake: decrement timer y aplicar offset aleatorio
+  if (shakeTimer > 0.0f) {
+    shakeTimer -= dt;
+    if (shakeTimer < 0.0f) shakeTimer = 0.0f;
+
+    int amp = static_cast<int>(shakeAmplitude);
+    if (amp > 0) {
+      cameraX += static_cast<float>(rand() % (2 * amp + 1) - amp);
+      cameraY += static_cast<float>(rand() % (2 * amp + 1) - amp);
+    }
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -251,7 +268,7 @@ void Game::update() {
   registry->getSystem<CollisionSystem>().update(eventManager);
   registry->getSystem<AnimationSystem>().update();
 
-  updateCamera();
+  updateCamera(static_cast<float>(deltaTime));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

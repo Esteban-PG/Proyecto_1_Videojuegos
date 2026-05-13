@@ -1,0 +1,17 @@
+{
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/src",
+        "${workspaceFolder}/libs",
+        "/opt/homebrew/include",
+        "/opt/homebrew/Cellar/lua@5.4/5.4.8/include/lua5.4"
+      ],
+      "compilerPath": "/usr/bin/g++",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "macos-gcc-arm64"
+    }
+  ],
+  "version": 4
+}

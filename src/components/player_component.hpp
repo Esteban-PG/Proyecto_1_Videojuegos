@@ -23,6 +23,15 @@ struct PlayerComponent {
   int   score;          ///< Accumulated score
   bool  isDead;         ///< Set true on lethal collision
   bool  hasWon;         ///< Set true on checkpoint contact
+  bool  isFalling;      ///< True while playing the gap-fall shrink animation
+  float fallTimer;      ///< Seconds remaining in the fall animation
+  float fallDuration;   ///< Total duration of the fall animation
+  float fallStartX;     ///< Car visual-center X when fall began
+  float fallStartY;     ///< Car visual-center Y when fall began
+  float fallTargetX;    ///< Gap center X (destination)
+  float fallTargetY;    ///< Gap center Y (destination)
+  float fallHalfW;      ///< Half scaled width at fall start (for position → top-left)
+  float fallHalfH;      ///< Half scaled height at fall start
 
   PlayerComponent(float speed    = 290.0f,
                   float rotSpeed = 130.0f,
@@ -40,7 +49,16 @@ struct PlayerComponent {
         baseScaleY(bScaleY),
         score(0),
         isDead(false),
-        hasWon(false) {}
+        hasWon(false),
+        isFalling(false),
+        fallTimer(0.0f),
+        fallDuration(0.5f),
+        fallStartX(0.0f),
+        fallStartY(0.0f),
+        fallTargetX(0.0f),
+        fallTargetY(0.0f),
+        fallHalfW(0.0f),
+        fallHalfH(0.0f) {}
 };
 
 #endif  // PLAYER_COMPONENT_HPP
