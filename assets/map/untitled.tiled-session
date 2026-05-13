@@ -1,6 +1,7 @@
 {
-    "activeFile": "",
+    "activeFile": "lvl_03.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
         "lvl_01.tmx": {
@@ -29,8 +30,8 @@
             "scale": 1.6555,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1514.9501661129568,
-                "y": 168.2271217154938
+                "x": 1528.2392026578073,
+                "y": 372.9990939293265
             }
         },
         "new_tileset.tsx": {
@@ -53,12 +54,15 @@
     "map.tileWidth": 16,
     "map.width": 100,
     "openFiles": [
+        "lvl_03.tmx",
+        "lvl_02.tmx"
     ],
     "project": "untitled.tiled-project",
     "property.type": "float",
     "recentFiles": [
-        "lvl_01.tmx",
         "lvl_02.tmx",
+        "lvl_03.tmx",
+        "lvl_01.tmx",
         "new_tileset.tsx",
         "terrain_2.tsx",
         "terrain.tsx"

@@ -18,7 +18,7 @@ function update()
     end
 
     if isPlayerWon(this) then
-        goToScene(nxt)
+        triggerWin()
         return
     end
 end

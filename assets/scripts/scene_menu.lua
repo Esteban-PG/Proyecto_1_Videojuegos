@@ -19,6 +19,7 @@ scene = {
 
     -- ── Input ────────────────────────────────────────────────────────────────
     keys    = {},
+    music   = "music_menu",
     buttons = {
         [0] = { name = "left_click", button = 1 },
     },

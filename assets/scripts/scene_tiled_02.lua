@@ -56,6 +56,7 @@ scene = {
         [7] = { action="nitro",      key=1073742049 },
     },
     buttons  = {},
+    music = "music_level2",
     map = {
         path = "./assets/map/lvl_02.tmx",
     },

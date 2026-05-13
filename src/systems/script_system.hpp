@@ -62,6 +62,7 @@ class ScriptSystem : public System {
     lua.set_function("goToScene",     goToScene);
     lua.set_function("quitGame",      quitGame);
     lua.set_function("respawnPlayer", respawnPlayer);
+    lua.set_function("triggerWin", []() { Game::getInstance().triggerWin(); });
   }
 
   /** Execute each entity's Lua update() function. */

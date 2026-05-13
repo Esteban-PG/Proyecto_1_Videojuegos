@@ -104,13 +104,12 @@ class BoxCollisionSystem : public System {
         Game::getInstance().audioManager->playSFX("death");
       }
     } else if (tag == "ramp") {
-      // Jump only if nitro is CURRENTLY boosting when the car touches the ramp.
-      // The player must time the nitro press so the boost is still active on contact.
       if (!pc.isJumping && playerEntity.hasComponent<NitroComponent>()) {
         const auto& nitro = playerEntity.getComponent<NitroComponent>();
         if (nitro.isBoosting) {
           pc.isJumping = true;
           pc.jumpTimer = pc.jumpDuration;
+          pc.score    += 75;
           Game::getInstance().audioManager->playSFX("jump");
           Game::getInstance().triggerShake(0.08f, 5.0f);
         }

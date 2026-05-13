@@ -71,6 +71,11 @@ void SceneLoader::loadScene(
   if (hasButtons != sol::nullopt)
     loadButtons(scene["buttons"], controllerManager);
 
+  // ── Music ────────────────────────────────────────────────────────────────
+  sol::optional<std::string> hasMusic = scene["music"];
+  if (hasMusic != sol::nullopt)
+    Game::getInstance().audioManager->playMusic(scene["music"].get<std::string>());
+
   // ── Map (TMX) ─────────────────────────────────────────────────────────────
   sol::optional<sol::table> hasMap = scene["map"];
   if (hasMap != sol::nullopt)
@@ -468,6 +473,20 @@ void SceneLoader::loadLayer(std::unique_ptr<Registry>& registry,
 void SceneLoader::loadObjectGroup(sol::state& lua,
                                   std::unique_ptr<Registry>& registry,
                                   tinyxml2::XMLElement* objGroup) {
+  // Crea una score_zone invisible de ancho total del mapa encima de una saw
+  auto spawnScoreZone = [&](float sawY) {
+    float fullW = static_cast<float>(Game::getInstance().mapWidth);
+    if (fullW <= 0) fullW = 800.0f;
+    Entity sz = registry->createEntity();
+    sz.addComponent<TransformComponent>(glm::vec2(0.0f, sawY - 5.0f), glm::vec2(1,1), 0.0);
+    sz.addComponent<BoxColliderComponent>(fullW, 10.0f);
+    sz.addComponent<TagComponent>("score_zone");
+    lua["on_click"] = sol::lua_nil;
+    lua["update"]   = sol::lua_nil;
+    lua.script_file("./assets/scripts/score_zone.lua");
+    sz.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
+  };
+
   for (auto* obj = objGroup->FirstChildElement("object");
        obj != nullptr;
        obj = obj->NextSiblingElement("object")) {
@@ -523,6 +542,7 @@ void SceneLoader::loadObjectGroup(sol::state& lua,
         sol::function updateFn = lua["update"];
         e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
       }
+      spawnScoreZone(y);
     }
     else if (cls == "patrol_saw") {
       // Pasar propiedades de Tiled al script antes de cargarlo
@@ -538,6 +558,7 @@ void SceneLoader::loadObjectGroup(sol::state& lua,
       lua["update"]   = sol::lua_nil;
       lua.script_file("./assets/scripts/saw_patrol.lua");
       e.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
+      spawnScoreZone(y);
     }
     else if (cls == "score_zone") {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);

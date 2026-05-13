@@ -1,0 +1,17 @@
+Coloca aqui los archivos de audio con estos nombres exactos.
+Formatos soportados: .ogg  .mp3  .wav  (en ese orden de preferencia)
+
+MUSICA (loop infinito automatico):
+  music_menu.ogg      — Menu principal
+  music_level1.ogg    — Nivel 1
+  music_level2.ogg    — Nivel 2
+  music_level3.ogg    — Nivel 3
+
+EFECTOS DE SONIDO (solo .wav u .ogg — MP3 no funciona para SFX):
+  jump.wav            — Salto en rampa
+  bounce.wav          — Rebote contra pared
+  death.wav           — Muerte del jugador
+  win.wav             — Llegar al checkpoint
+
+Si un archivo no existe el juego continua sin ese sonido.
+Fuentes recomendadas: https://itch.io  https://freesound.org  https://opengameart.org

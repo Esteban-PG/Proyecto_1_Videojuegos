@@ -69,6 +69,7 @@ void AudioManager::playMusic(const std::string& id, int loops) {
     return;
   }
   Mix_PlayMusic(it->second, loops);
+  Mix_VolumeMusic(MIX_MAX_VOLUME / 2);  // 50% volumen
 }
 
 void AudioManager::stopMusic(int fadeOutMs) {

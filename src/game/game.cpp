@@ -114,6 +114,32 @@ void Game::Setup() {
   lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string);
   registry->getSystem<ScriptSystem>().createLuaBinding(lua);
 
+  // Auto-cargar audio: intenta .ogg, .mp3, .wav — falla silenciosamente si no existe
+  auto tryMusic = [&](const std::string& id) {
+    for (const char* ext : {".ogg", ".mp3", ".wav"}) {
+      std::string path = "./assets/sounds/" + id + ext;
+      if (FILE* f = fopen(path.c_str(), "r")) { fclose(f);
+        audioManager->addMusic(id, path); return; }
+    }
+  };
+  auto trySFX = [&](const std::string& id) {
+    for (const char* ext : {".wav", ".ogg", ".mp3"}) {
+      std::string path = "./assets/sounds/" + id + ext;
+      if (FILE* f = fopen(path.c_str(), "r")) { fclose(f);
+        audioManager->addSFX(id, path); return; }
+    }
+  };
+
+  tryMusic("music_menu");
+  tryMusic("music_level1");
+  tryMusic("music_level2");
+  tryMusic("music_level3");
+
+  trySFX("jump");
+  trySFX("bounce");
+  trySFX("death");
+  trySFX("win");
+
   sceneManager->loadScenesFromScript("./assets/scripts/scenes.lua", lua);
 }
 
@@ -150,6 +176,16 @@ void Game::processInput() {
         break;
       }
       case SDL_MOUSEBUTTONDOWN:
+        if (isWinScreen && sdlEvent.button.button == SDL_BUTTON_LEFT) {
+          int mx = sdlEvent.button.x, my = sdlEvent.button.y;
+          if (pointInRect(mx, my, winBtnNext)) {
+            isWinScreen = false;
+            std::string next = lua["next_level"].get_or<std::string>("nitro_menu");
+            sceneManager->setNextScene(next);
+            sceneManager->stopScene();
+          }
+          break;
+        }
         if (isPaused && sdlEvent.button.button == SDL_BUTTON_LEFT) {
           int mx = sdlEvent.button.x, my = sdlEvent.button.y;
           if (pointInRect(mx, my, pauseBtnResume)) {
@@ -293,9 +329,60 @@ void Game::render() {
   registry->getSystem<RenderSystem>().update(renderer, assetManager, cameraX, cameraY);
   registry->getSystem<RenderTextSystem>().update(renderer, assetManager, cameraX, cameraY);
 
-  if (isPaused) renderPauseOverlay();
+  if (isPaused)    renderPauseOverlay();
+  if (isWinScreen) renderWinScreen();
 
   SDL_RenderPresent(renderer);
+}
+
+void Game::renderWinScreen() {
+  if (!pauseFont)
+    pauseFont = TTF_OpenFont("./assets/fonts/press_start.ttf", 16);
+
+  // Overlay oscuro
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 170);
+  SDL_Rect overlay = {0, 0, windowWidth, windowHeight};
+  SDL_RenderFillRect(renderer, &overlay);
+
+  // Panel
+  SDL_Rect panel = {220, 170, 360, 260};
+  SDL_SetRenderDrawColor(renderer, 10, 40, 10, 245);
+  SDL_RenderFillRect(renderer, &panel);
+
+  // Línea dorada superior
+  SDL_SetRenderDrawColor(renderer, 255, 200, 0, 255);
+  SDL_Rect line = {220, 170, 360, 3};
+  SDL_RenderFillRect(renderer, &line);
+
+  if (pauseFont) {
+    // Título
+    {
+      SDL_Surface* s = TTF_RenderText_Blended(pauseFont, "NIVEL COMPLETO!", {255, 220, 0, 255});
+      if (s) {
+        SDL_Texture* t = SDL_CreateTextureFromSurface(renderer, s);
+        SDL_Rect d = {windowWidth/2 - s->w/2, 192, s->w, s->h};
+        SDL_FreeSurface(s); SDL_RenderCopy(renderer, t, nullptr, &d);
+        SDL_DestroyTexture(t);
+      }
+    }
+    // Puntuación
+    {
+      int score = lua["current_score"].get_or(0);
+      std::string scoreStr = "SCORE: " + std::to_string(score);
+      SDL_Surface* s = TTF_RenderText_Blended(pauseFont, scoreStr.c_str(), {200, 255, 200, 255});
+      if (s) {
+        SDL_Texture* t = SDL_CreateTextureFromSurface(renderer, s);
+        SDL_Rect d = {windowWidth/2 - s->w/2, 270, s->w, s->h};
+        SDL_FreeSurface(s); SDL_RenderCopy(renderer, t, nullptr, &d);
+        SDL_DestroyTexture(t);
+      }
+    }
+  }
+
+  // Botón SIGUIENTE NIVEL
+  renderPauseButton(winBtnNext, "SIGUIENTE NIVEL",
+                    {20, 100, 20, 255}, {255, 255, 255, 255});
 }
 
 bool Game::pointInRect(int x, int y, const SDL_Rect& r) {
@@ -375,16 +462,18 @@ void Game::runScene() {
   cameraX  = 0.0f;
   cameraY  = 0.0f;
 
+  isWinScreen = false;
   sceneManager->loadScene();
 
   while (sceneManager->isSceneRunning()) {
     processInput();
-    if (!isPaused) {
+    if (!isPaused && !isWinScreen) {
       update();
     }
     render();
   }
 
+  audioManager->stopMusic(0);
   assetManager->ClearAssets();
   registry->clearAllEntities();
 }
