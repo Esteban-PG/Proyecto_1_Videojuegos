@@ -1,7 +1,7 @@
--- scene_tiled_02.lua  —  Nitro Rush: Tiled Level 02
+-- scene_tiled_03.lua  —  Nitro Rush: Tiled Level 03
 
-current_level = "level_tiled_02"
-next_level    = "level_tiled_03"
+current_level = "level_tiled_03"
+next_level    = "nitro_menu"
 zone_points   = 100
 
 -- ── HUD ───────────────────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ scene = {
     },
     buttons  = {},
     map = {
-        path = "./assets/map/lvl_02.tmx",
+        path = "./assets/map/lvl_03.tmx",
     },
     entities = E,
 }

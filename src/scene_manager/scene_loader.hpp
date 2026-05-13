@@ -51,7 +51,11 @@ class SceneLoader {
                std::unique_ptr<AssetManager>& assetManager);
   void loadLayer(std::unique_ptr<Registry>& registry,
                  tinyxml2::XMLElement* xmlLayer,
-                 int tWidth, int tHeight, int mWidth, int tilesetColumns);
+                 int tWidth, int tHeight, int mWidth, int mHeight,
+                 int tilesetColumns,
+                 SDL_Renderer* renderer,
+                 std::unique_ptr<AssetManager>& assetManager,
+                 int layerIndex);
   void loadObjectGroup(sol::state& lua,
                        std::unique_ptr<Registry>& registry,
                        tinyxml2::XMLElement* objGroup);

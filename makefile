@@ -1,7 +1,7 @@
 CC      = g++
 STD     = -std=c++17
 CFLAGS  = -Wall -Wextra -g
-INC_PATH = -I"./libs/" \
+INC_PATH = -isystem ./libs/ \
             -I/opt/homebrew/include \
             -I/opt/homebrew/Cellar/lua@5.4/5.4.8/include/lua5.4
 

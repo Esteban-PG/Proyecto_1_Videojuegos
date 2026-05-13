@@ -379,10 +379,12 @@ void SceneLoader::loadMap(sol::state& lua, const sol::table& map,
   }
 
   // ── Tile layers ───────────────────────────────────────────────────────────
+  int layerIndex = 0;
   for (auto* xmlLayer = xmlRoot->FirstChildElement("layer");
        xmlLayer != nullptr;
        xmlLayer = xmlLayer->NextSiblingElement("layer")) {
-    loadLayer(registry, xmlLayer, tWidth, tHeight, mWidth, tilesetColumns);
+    loadLayer(registry, xmlLayer, tWidth, tHeight, mWidth, mHeight,
+              tilesetColumns, renderer, assetManager, layerIndex++);
   }
 
   // ── Object groups (paredes, obstáculos, jugador, etc.) ────────────────────
@@ -399,13 +401,32 @@ void SceneLoader::loadMap(sol::state& lua, const sol::table& map,
 
 void SceneLoader::loadLayer(std::unique_ptr<Registry>& registry,
                             tinyxml2::XMLElement* xmlLayer,
-                            int tWidth, int tHeight, int mWidth,
-                            int tilesetColumns) {
+                            int tWidth, int tHeight, int mWidth, int mHeight,
+                            int tilesetColumns,
+                            SDL_Renderer* renderer,
+                            std::unique_ptr<AssetManager>& assetManager,
+                            int layerIndex) {
   tinyxml2::XMLElement* dataEl = xmlLayer->FirstChildElement("data");
   if (!dataEl) return;
-
   const char* rawData = dataEl->GetText();
   if (!rawData) return;
+
+  SDL_Texture* tileset = assetManager->getTexture("tilemap");
+  if (!tileset) return;
+
+  // Crear textura destino del tamaño total del mapa
+  const int mapPixelW = mWidth  * tWidth;
+  const int mapPixelH = mHeight * tHeight;
+
+  SDL_Texture* baked = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                          SDL_TEXTUREACCESS_TARGET,
+                                          mapPixelW, mapPixelH);
+  if (!baked) return;
+
+  SDL_SetTextureBlendMode(baked, SDL_BLENDMODE_NONE);
+  SDL_SetRenderTarget(renderer, baked);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
 
   std::istringstream stream(rawData);
   std::string token;
@@ -417,21 +438,26 @@ void SceneLoader::loadLayer(std::unique_ptr<Registry>& registry,
     int tileId = std::stoi(token);
 
     if (tileId != 0) {
-      // srcX/srcY se calculan sobre las columnas del tileset, no del mapa
       int srcX = ((tileId - 1) % tilesetColumns) * tWidth;
       int srcY = ((tileId - 1) / tilesetColumns) * tHeight;
-
-      Entity tile = registry->createEntity();
-      tile.addComponent<TransformComponent>(
-          glm::vec2(col * tWidth, row * tHeight),
-          glm::vec2(1.0f, 1.0f),
-          0.0);
-      tile.addComponent<SpriteComponent>("tilemap", tWidth, tHeight, srcX, srcY, false);
+      SDL_Rect src = { srcX, srcY, tWidth, tHeight };
+      SDL_Rect dst = { col * tWidth, row * tHeight, tWidth, tHeight };
+      SDL_RenderCopy(renderer, tileset, &src, &dst);
     }
 
     col++;
     if (col >= mWidth) { col = 0; row++; }
   }
+
+  SDL_SetRenderTarget(renderer, nullptr);
+
+  // Registrar la textura horneada y crear una sola entidad
+  std::string bakedId = "baked_layer_" + std::to_string(layerIndex);
+  assetManager->addRawTexture(bakedId, baked);
+
+  Entity layer = registry->createEntity();
+  layer.addComponent<TransformComponent>(glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 1.0f), 0.0);
+  layer.addComponent<SpriteComponent>(bakedId, mapPixelW, mapPixelH, 0, 0, false);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

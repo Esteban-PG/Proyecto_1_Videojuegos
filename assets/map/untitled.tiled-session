@@ -15,11 +15,22 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 4,
+            "scale": 0.8199,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 649.25,
-                "y": 2548.375
+                "x": 1128.186364190755,
+                "y": 1989.87681424564
+            }
+        },
+        "lvl_03.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.6555,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1514.9501661129568,
+                "y": 168.2271217154938
             }
         },
         "new_tileset.tsx": {
@@ -36,20 +47,20 @@
         }
     },
     "last.imagePath": "/Users/estebanao/Downloads/kenney_new-platformer-pack-1",
-    "map.height": 200,
+    "map.height": 100,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 200,
+    "map.width": 100,
     "openFiles": [
     ],
     "project": "untitled.tiled-project",
     "property.type": "float",
     "recentFiles": [
-        "new_tileset.tsx",
-        "terrain_2.tsx",
         "lvl_01.tmx",
         "lvl_02.tmx",
+        "new_tileset.tsx",
+        "terrain_2.tsx",
         "terrain.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",

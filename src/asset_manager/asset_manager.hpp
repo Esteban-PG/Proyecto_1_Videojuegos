@@ -30,6 +30,7 @@ class AssetManager {
   void addColorTexture(SDL_Renderer* renderer, const std::string& textureId,
                        Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255);
 
+  void         addRawTexture(const std::string& textureId, SDL_Texture* texture);
   SDL_Texture* getTexture(const std::string& textureId) const;
   bool         hasTexture(const std::string& textureId) const;
 

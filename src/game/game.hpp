@@ -43,6 +43,15 @@ class Game {
   bool        isPaused          = false;
   float       cameraX           = 0.0f;
   float       cameraY           = 0.0f;
+  TTF_Font*   pauseFont         = nullptr;
+
+  // Áreas de los botones del menú de pausa (screen space)
+  SDL_Rect    pauseBtnResume    = {240, 270, 320, 50};
+  SDL_Rect    pauseBtnMenu      = {240, 340, 320, 50};
+
+  void renderPauseButton(const SDL_Rect& rect, const char* label,
+                         SDL_Color bg, SDL_Color fg);
+  bool pointInRect(int x, int y, const SDL_Rect& r);
 
  public:
   std::unique_ptr<EventManager>      eventManager;

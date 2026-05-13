@@ -71,6 +71,11 @@ void AssetManager::addColorTexture(SDL_Renderer* renderer,
   std::cout << "[ASSET MANAGER] Added colour texture: " << textureId << std::endl;
 }
 
+void AssetManager::addRawTexture(const std::string& textureId,
+                                  SDL_Texture* texture) {
+  if (texture) textures.emplace(textureId, texture);
+}
+
 SDL_Texture* AssetManager::getTexture(const std::string& textureId) const {
   auto it = textures.find(textureId);
   if (it != textures.end()) {

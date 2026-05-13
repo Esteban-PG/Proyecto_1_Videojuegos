@@ -150,6 +150,17 @@ void Game::processInput() {
         break;
       }
       case SDL_MOUSEBUTTONDOWN:
+        if (isPaused && sdlEvent.button.button == SDL_BUTTON_LEFT) {
+          int mx = sdlEvent.button.x, my = sdlEvent.button.y;
+          if (pointInRect(mx, my, pauseBtnResume)) {
+            isPaused = false;
+          } else if (pointInRect(mx, my, pauseBtnMenu)) {
+            isPaused = false;
+            sceneManager->setNextScene("nitro_menu");
+            sceneManager->stopScene();
+          }
+          break;
+        }
         controllerManager->setMousePosition(sdlEvent.button.x, sdlEvent.button.y);
         controllerManager->mouseButtonDown(static_cast<int>(sdlEvent.button.button));
         eventManager->emitEvent<ClickEvent>(
@@ -287,35 +298,72 @@ void Game::render() {
   SDL_RenderPresent(renderer);
 }
 
-void Game::renderPauseOverlay() {
-  // Semi-transparent dark overlay
+bool Game::pointInRect(int x, int y, const SDL_Rect& r) {
+  return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+}
+
+void Game::renderPauseButton(const SDL_Rect& rect, const char* label,
+                              SDL_Color bg, SDL_Color fg) {
+  // Fondo del botón
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 160);
+  SDL_SetRenderDrawColor(renderer, bg.r, bg.g, bg.b, bg.a);
+  SDL_RenderFillRect(renderer, &rect);
+
+  if (!pauseFont) return;
+  SDL_Surface* surf = TTF_RenderText_Blended(pauseFont, label, fg);
+  if (!surf) return;
+  SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+  SDL_Rect dst = {
+      rect.x + (rect.w - surf->w) / 2,
+      rect.y + (rect.h - surf->h) / 2,
+      surf->w, surf->h
+  };
+  SDL_FreeSurface(surf);
+  SDL_RenderCopy(renderer, tex, nullptr, &dst);
+  SDL_DestroyTexture(tex);
+}
+
+void Game::renderPauseOverlay() {
+  // Cargar fuente la primera vez
+  if (!pauseFont)
+    pauseFont = TTF_OpenFont("./assets/fonts/press_start.ttf", 16);
+
+  // Overlay oscuro
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 170);
   SDL_Rect overlay = {0, 0, windowWidth, windowHeight};
   SDL_RenderFillRect(renderer, &overlay);
 
-  // "PAUSED" text using the UI font loaded by the scene
-  if (assetManager->hasFont("font_hud")) {
-    TTF_Font* font = assetManager->getFont("font_hud");
-    const char* msg = "PAUSED  —  ESC to resume";
-    SDL_Surface* surf = TTF_RenderText_Blended(font, msg, {255, 255, 100, 255});
+  // Panel central
+  SDL_Rect panel = {220, 190, 360, 230};
+  SDL_SetRenderDrawColor(renderer, 12, 12, 30, 240);
+  SDL_RenderFillRect(renderer, &panel);
+
+  // Línea dorada superior del panel
+  SDL_SetRenderDrawColor(renderer, 255, 200, 0, 200);
+  SDL_Rect line = {220, 190, 360, 3};
+  SDL_RenderFillRect(renderer, &line);
+
+  // Título "PAUSED"
+  if (pauseFont) {
+    SDL_Surface* surf = TTF_RenderText_Blended(pauseFont, "PAUSED",
+                                               {255, 200, 0, 255});
     if (surf) {
       SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
-      SDL_Rect r = {windowWidth / 2 - surf->w / 2,
-                    windowHeight / 2 - surf->h / 2,
-                    surf->w, surf->h};
+      SDL_Rect dst = {windowWidth / 2 - surf->w / 2, 210, surf->w, surf->h};
       SDL_FreeSurface(surf);
-      SDL_RenderCopy(renderer, tex, nullptr, &r);
+      SDL_RenderCopy(renderer, tex, nullptr, &dst);
       SDL_DestroyTexture(tex);
     }
-  } else {
-    // Fallback: draw two white rectangles (pause icon)
-    SDL_SetRenderDrawColor(renderer, 255, 255, 100, 220);
-    SDL_Rect bar1 = {windowWidth / 2 - 30, windowHeight / 2 - 40, 20, 80};
-    SDL_Rect bar2 = {windowWidth / 2 + 10, windowHeight / 2 - 40, 20, 80};
-    SDL_RenderFillRect(renderer, &bar1);
-    SDL_RenderFillRect(renderer, &bar2);
   }
+
+  // Botón RESUME
+  renderPauseButton(pauseBtnResume, "RESUME",
+                    {30, 90, 30, 255}, {255, 255, 255, 255});
+
+  // Botón MAIN MENU
+  renderPauseButton(pauseBtnMenu, "MAIN MENU",
+                    {60, 20, 20, 255}, {255, 180, 180, 255});
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -361,8 +409,9 @@ void Game::destroy() {
   if (assetManager) assetManager->ClearAssets();
   if (audioManager) audioManager->destroy();
 
-  if (renderer) { SDL_DestroyRenderer(renderer); renderer = nullptr; }
-  if (window)   { SDL_DestroyWindow(window);     window   = nullptr; }
+  if (pauseFont) { TTF_CloseFont(pauseFont);       pauseFont = nullptr; }
+  if (renderer)  { SDL_DestroyRenderer(renderer); renderer  = nullptr; }
+  if (window)    { SDL_DestroyWindow(window);      window    = nullptr; }
 
   Mix_Quit();
   TTF_Quit();
