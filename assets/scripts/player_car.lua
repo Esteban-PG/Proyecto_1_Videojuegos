@@ -7,15 +7,21 @@
 --   current_level = "level_01"
 --   next_level    = "level_02"
 
--- Read level transition targets set by the scene file
-local my_level = current_level or "level_01"
-local nxt      = next_level    or "nitro_menu"
+local nxt         = next_level or "nitro_menu"
+local death_timer = 0
+local DEATH_DELAY = 0.6   -- segundos de pausa antes del respawn
 
 function update()
     if isPlayerDead(this) then
-        respawnPlayer()
+        death_timer = death_timer + delta_time
+        if death_timer >= DEATH_DELAY then
+            death_timer = 0
+            respawnPlayer()
+        end
         return
     end
+
+    death_timer = 0
 
     if isPlayerWon(this) then
         triggerWin()

@@ -123,6 +123,7 @@ class BoxCollisionSystem : public System {
       if (!pc.isDead && !pc.isFalling) {
         pc.isDead = true;
         Game::getInstance().audioManager->playSFX("death");
+        Game::getInstance().triggerShake(0.25f, 7.0f);
       }
     }
   }

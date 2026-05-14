@@ -50,6 +50,7 @@ class DamageSystem : public System {
           std::cout << "[DAMAGE] Player hit a saw — dead." << std::endl;
           pc.isDead = true;
           Game::getInstance().audioManager->playSFX("death");
+          Game::getInstance().triggerShake(0.25f, 7.0f);
         }
       } else {
         // Fallback: kill entity if no PlayerComponent (legacy behaviour)
