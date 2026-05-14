@@ -221,6 +221,7 @@ void respawnPlayer() {
 
   // Resetear estado del jugador
   rb.velocity  = {0.0f, 0.0f};
+  pc.score     = 0;
   pc.isDead    = false;
   pc.hasWon    = false;
   pc.isFalling = false;
