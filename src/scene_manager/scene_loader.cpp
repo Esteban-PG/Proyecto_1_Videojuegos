@@ -22,11 +22,13 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-SceneLoader::SceneLoader() {
+SceneLoader::SceneLoader()
+{
   std::cout << "[SCENE LOADER] Constructor called." << std::endl;
 }
 
-SceneLoader::~SceneLoader() {
+SceneLoader::~SceneLoader()
+{
   std::cout << "[SCENE LOADER] Destructor called." << std::endl;
 }
 
@@ -35,13 +37,15 @@ SceneLoader::~SceneLoader() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 void SceneLoader::loadScene(
-    const std::string& sceneFilePath, sol::state& lua,
-    std::unique_ptr<AssetManager>& assetManager,
-    std::unique_ptr<ControllerManager>& controllerManager,
-    std::unique_ptr<Registry>& registry, SDL_Renderer* renderer) {
+    const std::string &sceneFilePath, sol::state &lua,
+    std::unique_ptr<AssetManager> &assetManager,
+    std::unique_ptr<ControllerManager> &controllerManager,
+    std::unique_ptr<Registry> &registry, SDL_Renderer *renderer)
+{
 
   sol::load_result script = lua.load_file(sceneFilePath);
-  if (!script.valid()) {
+  if (!script.valid())
+  {
     sol::error err = script;
     std::cerr << "[SCENE LOADER] Failed to load scene: " << err.what() << std::endl;
     return;
@@ -91,13 +95,16 @@ void SceneLoader::loadScene(
 // loadColorTextures
 // ─────────────────────────────────────────────────────────────────────────────
 
-void SceneLoader::loadColorTextures(SDL_Renderer* renderer,
-                                    const sol::table& colorTextures,
-                                    std::unique_ptr<AssetManager>& assetManager) {
+void SceneLoader::loadColorTextures(SDL_Renderer *renderer,
+                                    const sol::table &colorTextures,
+                                    std::unique_ptr<AssetManager> &assetManager)
+{
   int i = 0;
-  while (true) {
+  while (true)
+  {
     sol::optional<sol::table> entry = colorTextures[i];
-    if (!entry) break;
+    if (!entry)
+      break;
     sol::table t = colorTextures[i];
     std::string id = t["assetId"];
     Uint8 r = t["r"].get_or<Uint8>(255);
@@ -113,14 +120,17 @@ void SceneLoader::loadColorTextures(SDL_Renderer* renderer,
 // loadSprites
 // ─────────────────────────────────────────────────────────────────────────────
 
-void SceneLoader::loadSprites(SDL_Renderer* renderer, const sol::table& sprites,
-                              std::unique_ptr<AssetManager>& assetManager) {
+void SceneLoader::loadSprites(SDL_Renderer *renderer, const sol::table &sprites,
+                              std::unique_ptr<AssetManager> &assetManager)
+{
   int i = 0;
-  while (true) {
+  while (true)
+  {
     sol::optional<sol::table> entry = sprites[i];
-    if (!entry) break;
+    if (!entry)
+      break;
     sol::table sprite = sprites[i];
-    std::string assetId  = sprite["assetId"];
+    std::string assetId = sprite["assetId"];
     std::string filePath = sprite["filePath"];
     assetManager->addTexture(renderer, assetId, filePath);
     ++i;
@@ -131,16 +141,19 @@ void SceneLoader::loadSprites(SDL_Renderer* renderer, const sol::table& sprites,
 // loadFonts
 // ─────────────────────────────────────────────────────────────────────────────
 
-void SceneLoader::loadFonts(const sol::table& fonts,
-                            std::unique_ptr<AssetManager>& assetManager) {
+void SceneLoader::loadFonts(const sol::table &fonts,
+                            std::unique_ptr<AssetManager> &assetManager)
+{
   int i = 0;
-  while (true) {
+  while (true)
+  {
     sol::optional<sol::table> entry = fonts[i];
-    if (!entry) break;
+    if (!entry)
+      break;
     sol::table font = fonts[i];
-    std::string fontId   = font["assetId"];
+    std::string fontId = font["assetId"];
     std::string filePath = font["filePath"];
-    int         fontSize = font["fontSize"];
+    int fontSize = font["fontSize"];
     assetManager->addFont(fontId, filePath, fontSize);
     ++i;
   }
@@ -150,29 +163,35 @@ void SceneLoader::loadFonts(const sol::table& fonts,
 // loadKeys / loadButtons
 // ─────────────────────────────────────────────────────────────────────────────
 
-void SceneLoader::loadKeys(const sol::table& keys,
-                           std::unique_ptr<ControllerManager>& controllerManager) {
+void SceneLoader::loadKeys(const sol::table &keys,
+                           std::unique_ptr<ControllerManager> &controllerManager)
+{
   int i = 0;
-  while (true) {
+  while (true)
+  {
     sol::optional<sol::table> entry = keys[i];
-    if (!entry) break;
+    if (!entry)
+      break;
     sol::table key = keys[i];
     std::string action = key["action"];
-    int         code   = key["key"];
+    int code = key["key"];
     controllerManager->addActionKey(action, code);
     ++i;
   }
 }
 
-void SceneLoader::loadButtons(const sol::table& buttons,
-                              std::unique_ptr<ControllerManager>& controllerManager) {
+void SceneLoader::loadButtons(const sol::table &buttons,
+                              std::unique_ptr<ControllerManager> &controllerManager)
+{
   int i = 0;
-  while (true) {
+  while (true)
+  {
     sol::optional<sol::table> entry = buttons[i];
-    if (!entry) break;
-    sol::table btn  = buttons[i];
+    if (!entry)
+      break;
+    sol::table btn = buttons[i];
     std::string name = btn["name"];
-    int         code = btn["button"];
+    int code = btn["button"];
     controllerManager->addMouseButton(name, code);
     ++i;
   }
@@ -182,23 +201,31 @@ void SceneLoader::loadButtons(const sol::table& buttons,
 // loadEntities
 // ─────────────────────────────────────────────────────────────────────────────
 
-void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
-                               std::unique_ptr<Registry>& registry) {
+void SceneLoader::loadEntities(sol::state &lua, const sol::table &entities,
+                               std::unique_ptr<Registry> &registry)
+{
   int i = 0;
-  while (true) {
+  while (true)
+  {
     sol::optional<sol::table> hasEntity = entities[i];
-    if (!hasEntity) break;
+    if (!hasEntity)
+      break;
 
     sol::table entityDef = entities[i];
     Entity newEntity = registry->createEntity();
 
     sol::optional<sol::table> hasComponents = entityDef["components"];
-    if (hasComponents == sol::nullopt) { ++i; continue; }
+    if (hasComponents == sol::nullopt)
+    {
+      ++i;
+      continue;
+    }
 
     sol::table c = entityDef["components"];
 
     // ── AnimationComponent ────────────────────────────────────────────────
-    if (c["animation"] != sol::lua_nil) {
+    if (c["animation"] != sol::lua_nil)
+    {
       sol::table anim = c["animation"];
       newEntity.addComponent<AnimationComponent>(
           anim["num_frames"].get_or(1),
@@ -207,7 +234,8 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
     }
 
     // ── BoxColliderComponent ──────────────────────────────────────────────
-    if (c["box_collider"] != sol::lua_nil) {
+    if (c["box_collider"] != sol::lua_nil)
+    {
       sol::table bc = c["box_collider"];
       newEntity.addComponent<BoxColliderComponent>(
           bc["width"].get_or(32.0f),
@@ -215,7 +243,8 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
     }
 
     // ── CircleColliderComponent ───────────────────────────────────────────
-    if (c["circle_collider"] != sol::lua_nil) {
+    if (c["circle_collider"] != sol::lua_nil)
+    {
       sol::table cc = c["circle_collider"];
       newEntity.addComponent<CircleColliderComponent>(
           cc["radius"].get_or(16.0f),
@@ -224,12 +253,14 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
     }
 
     // ── ClickableComponent ────────────────────────────────────────────────
-    if (c["clickable"] != sol::lua_nil) {
+    if (c["clickable"] != sol::lua_nil)
+    {
       newEntity.addComponent<ClickableComponent>();
     }
 
     // ── NitroComponent ────────────────────────────────────────────────────
-    if (c["nitro"] != sol::lua_nil) {
+    if (c["nitro"] != sol::lua_nil)
+    {
       sol::table n = c["nitro"];
       newEntity.addComponent<NitroComponent>(
           n["cooldown"].get_or(2.0f),
@@ -237,7 +268,8 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
     }
 
     // ── PlayerComponent ───────────────────────────────────────────────────
-    if (c["player"] != sol::lua_nil) {
+    if (c["player"] != sol::lua_nil)
+    {
       sol::table p = c["player"];
       newEntity.addComponent<PlayerComponent>(
           p["base_speed"].get_or(290.0f),
@@ -249,7 +281,8 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
     }
 
     // ── RigidBodyComponent ────────────────────────────────────────────────
-    if (c["rigid_body"] != sol::lua_nil) {
+    if (c["rigid_body"] != sol::lua_nil)
+    {
       sol::table rb = c["rigid_body"];
       newEntity.addComponent<RigidBodyComponent>(
           glm::vec2(rb["velocity"]["x"].get_or(0.0f),
@@ -257,25 +290,29 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
     }
 
     // ── ScriptComponent ───────────────────────────────────────────────────
-    if (c["script"] != sol::lua_nil) {
+    if (c["script"] != sol::lua_nil)
+    {
       lua["on_click"] = sol::lua_nil;
-      lua["update"]   = sol::lua_nil;
+      lua["update"] = sol::lua_nil;
       std::string path = c["script"]["path"];
       lua.script_file(path);
 
       sol::function onClick = sol::lua_nil;
       sol::optional<sol::function> hasClick = lua["on_click"];
-      if (hasClick) onClick = lua["on_click"];
+      if (hasClick)
+        onClick = lua["on_click"];
 
       sol::function updateFn = sol::lua_nil;
       sol::optional<sol::function> hasUpdate = lua["update"];
-      if (hasUpdate) updateFn = lua["update"];
+      if (hasUpdate)
+        updateFn = lua["update"];
 
       newEntity.addComponent<ScriptComponent>(updateFn, onClick);
     }
 
     // ── SpriteComponent ───────────────────────────────────────────────────
-    if (c["sprite"] != sol::lua_nil) {
+    if (c["sprite"] != sol::lua_nil)
+    {
       sol::table s = c["sprite"];
       bool isFixed = s["is_fixed"].get_or(false);
       newEntity.addComponent<SpriteComponent>(
@@ -288,13 +325,15 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
     }
 
     // ── TagComponent ──────────────────────────────────────────────────────
-    if (c["tag"] != sol::lua_nil) {
+    if (c["tag"] != sol::lua_nil)
+    {
       std::string tag = c["tag"]["tag"].get_or<std::string>("");
       newEntity.addComponent<TagComponent>(tag);
     }
 
     // ── TextComponent ─────────────────────────────────────────────────────
-    if (c["text"] != sol::lua_nil) {
+    if (c["text"] != sol::lua_nil)
+    {
       sol::table t = c["text"];
       bool isFixed = t["is_fixed"].get_or(false);
       newEntity.addComponent<TextComponent>(
@@ -304,13 +343,13 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
               static_cast<Uint8>(t["color"]["r"].get_or(255)),
               static_cast<Uint8>(t["color"]["g"].get_or(255)),
               static_cast<Uint8>(t["color"]["b"].get_or(255)),
-              static_cast<Uint8>(t["color"]["a"].get_or(255))
-          },
+              static_cast<Uint8>(t["color"]["a"].get_or(255))},
           isFixed);
     }
 
     // ── TransformComponent ────────────────────────────────────────────────
-    if (c["transform"] != sol::lua_nil) {
+    if (c["transform"] != sol::lua_nil)
+    {
       sol::table t = c["transform"];
       newEntity.addComponent<TransformComponent>(
           glm::vec2(t["position"]["x"].get_or(0.0f),
@@ -328,12 +367,14 @@ void SceneLoader::loadEntities(sol::state& lua, const sol::table& entities,
 // loadMap
 // ─────────────────────────────────────────────────────────────────────────────
 
-void SceneLoader::loadMap(sol::state& lua, const sol::table& map,
-                          std::unique_ptr<Registry>& registry,
-                          SDL_Renderer* renderer,
-                          std::unique_ptr<AssetManager>& assetManager) {
+void SceneLoader::loadMap(sol::state &lua, const sol::table &map,
+                          std::unique_ptr<Registry> &registry,
+                          SDL_Renderer *renderer,
+                          std::unique_ptr<AssetManager> &assetManager)
+{
   sol::optional<std::string> hasPath = map["path"];
-  if (hasPath == sol::nullopt) {
+  if (hasPath == sol::nullopt)
+  {
     std::cerr << "[SCENE LOADER] loadMap: missing 'path' in map table." << std::endl;
     return;
   }
@@ -341,40 +382,46 @@ void SceneLoader::loadMap(sol::state& lua, const sol::table& map,
   std::string path = map["path"];
 
   tinyxml2::XMLDocument xmlDoc;
-  if (xmlDoc.LoadFile(path.c_str()) != tinyxml2::XML_SUCCESS) {
+  if (xmlDoc.LoadFile(path.c_str()) != tinyxml2::XML_SUCCESS)
+  {
     std::cerr << "[SCENE LOADER] loadMap: failed to load TMX file: " << path << std::endl;
     return;
   }
 
-  tinyxml2::XMLElement* xmlRoot = xmlDoc.RootElement();
+  tinyxml2::XMLElement *xmlRoot = xmlDoc.RootElement();
 
   int tWidth = 0, tHeight = 0, mWidth = 0, mHeight = 0;
-  xmlRoot->QueryIntAttribute("tilewidth",  &tWidth);
+  xmlRoot->QueryIntAttribute("tilewidth", &tWidth);
   xmlRoot->QueryIntAttribute("tileheight", &tHeight);
-  xmlRoot->QueryIntAttribute("width",      &mWidth);
-  xmlRoot->QueryIntAttribute("height",     &mHeight);
+  xmlRoot->QueryIntAttribute("width", &mWidth);
+  xmlRoot->QueryIntAttribute("height", &mHeight);
 
-  Game::getInstance().mapWidth  = tWidth  * mWidth;
+  Game::getInstance().mapWidth = tWidth * mWidth;
   Game::getInstance().mapHeight = tHeight * mHeight;
 
   // ── Leer el tileset externo (.tsx) para obtener columnas e imagen ──────────
   int tilesetColumns = mWidth; // fallback si no se puede leer el TSX
   std::string tmxDir = path.substr(0, path.find_last_of("/\\") + 1);
 
-  tinyxml2::XMLElement* tilesetEl = xmlRoot->FirstChildElement("tileset");
-  if (tilesetEl) {
-    const char* source = tilesetEl->Attribute("source");
-    if (source) {
+  tinyxml2::XMLElement *tilesetEl = xmlRoot->FirstChildElement("tileset");
+  if (tilesetEl)
+  {
+    const char *source = tilesetEl->Attribute("source");
+    if (source)
+    {
       std::string tsxPath = tmxDir + source;
       tinyxml2::XMLDocument tsxDoc;
-      if (tsxDoc.LoadFile(tsxPath.c_str()) == tinyxml2::XML_SUCCESS) {
-        tinyxml2::XMLElement* tsxRoot = tsxDoc.RootElement();
+      if (tsxDoc.LoadFile(tsxPath.c_str()) == tinyxml2::XML_SUCCESS)
+      {
+        tinyxml2::XMLElement *tsxRoot = tsxDoc.RootElement();
         tsxRoot->QueryIntAttribute("columns", &tilesetColumns);
 
-        tinyxml2::XMLElement* imgEl = tsxRoot->FirstChildElement("image");
-        if (imgEl) {
-          const char* imgSrc = imgEl->Attribute("source");
-          if (imgSrc) {
+        tinyxml2::XMLElement *imgEl = tsxRoot->FirstChildElement("image");
+        if (imgEl)
+        {
+          const char *imgSrc = imgEl->Attribute("source");
+          if (imgSrc)
+          {
             std::string imgPath = tmxDir + imgSrc;
             assetManager->addTexture(renderer, "tilemap", imgPath);
           }
@@ -385,17 +432,19 @@ void SceneLoader::loadMap(sol::state& lua, const sol::table& map,
 
   // ── Tile layers ───────────────────────────────────────────────────────────
   int layerIndex = 0;
-  for (auto* xmlLayer = xmlRoot->FirstChildElement("layer");
+  for (auto *xmlLayer = xmlRoot->FirstChildElement("layer");
        xmlLayer != nullptr;
-       xmlLayer = xmlLayer->NextSiblingElement("layer")) {
+       xmlLayer = xmlLayer->NextSiblingElement("layer"))
+  {
     loadLayer(registry, xmlLayer, tWidth, tHeight, mWidth, mHeight,
               tilesetColumns, renderer, assetManager, layerIndex++);
   }
 
   // ── Object groups (paredes, obstáculos, jugador, etc.) ────────────────────
-  for (auto* objGroup = xmlRoot->FirstChildElement("objectgroup");
+  for (auto *objGroup = xmlRoot->FirstChildElement("objectgroup");
        objGroup != nullptr;
-       objGroup = objGroup->NextSiblingElement("objectgroup")) {
+       objGroup = objGroup->NextSiblingElement("objectgroup"))
+  {
     loadObjectGroup(lua, registry, objGroup);
   }
 }
@@ -404,29 +453,34 @@ void SceneLoader::loadMap(sol::state& lua, const sol::table& map,
 // loadLayer  (tile layer)
 // ─────────────────────────────────────────────────────────────────────────────
 
-void SceneLoader::loadLayer(std::unique_ptr<Registry>& registry,
-                            tinyxml2::XMLElement* xmlLayer,
+void SceneLoader::loadLayer(std::unique_ptr<Registry> &registry,
+                            tinyxml2::XMLElement *xmlLayer,
                             int tWidth, int tHeight, int mWidth, int mHeight,
                             int tilesetColumns,
-                            SDL_Renderer* renderer,
-                            std::unique_ptr<AssetManager>& assetManager,
-                            int layerIndex) {
-  tinyxml2::XMLElement* dataEl = xmlLayer->FirstChildElement("data");
-  if (!dataEl) return;
-  const char* rawData = dataEl->GetText();
-  if (!rawData) return;
+                            SDL_Renderer *renderer,
+                            std::unique_ptr<AssetManager> &assetManager,
+                            int layerIndex)
+{
+  tinyxml2::XMLElement *dataEl = xmlLayer->FirstChildElement("data");
+  if (!dataEl)
+    return;
+  const char *rawData = dataEl->GetText();
+  if (!rawData)
+    return;
 
-  SDL_Texture* tileset = assetManager->getTexture("tilemap");
-  if (!tileset) return;
+  SDL_Texture *tileset = assetManager->getTexture("tilemap");
+  if (!tileset)
+    return;
 
   // Crear textura destino del tamaño total del mapa
-  const int mapPixelW = mWidth  * tWidth;
+  const int mapPixelW = mWidth * tWidth;
   const int mapPixelH = mHeight * tHeight;
 
-  SDL_Texture* baked = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                          SDL_TEXTUREACCESS_TARGET,
-                                          mapPixelW, mapPixelH);
-  if (!baked) return;
+  SDL_Texture *baked = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                         SDL_TEXTUREACCESS_TARGET,
+                                         mapPixelW, mapPixelH);
+  if (!baked)
+    return;
 
   SDL_SetTextureBlendMode(baked, SDL_BLENDMODE_NONE);
   SDL_SetRenderTarget(renderer, baked);
@@ -437,21 +491,28 @@ void SceneLoader::loadLayer(std::unique_ptr<Registry>& registry,
   std::string token;
   int col = 0, row = 0;
 
-  while (std::getline(stream, token, ',')) {
+  while (std::getline(stream, token, ','))
+  {
     token.erase(0, token.find_first_not_of(" \t\r\n"));
-    if (token.empty()) continue;
+    if (token.empty())
+      continue;
     int tileId = std::stoi(token);
 
-    if (tileId != 0) {
+    if (tileId != 0)
+    {
       int srcX = ((tileId - 1) % tilesetColumns) * tWidth;
       int srcY = ((tileId - 1) / tilesetColumns) * tHeight;
-      SDL_Rect src = { srcX, srcY, tWidth, tHeight };
-      SDL_Rect dst = { col * tWidth, row * tHeight, tWidth, tHeight };
+      SDL_Rect src = {srcX, srcY, tWidth, tHeight};
+      SDL_Rect dst = {col * tWidth, row * tHeight, tWidth, tHeight};
       SDL_RenderCopy(renderer, tileset, &src, &dst);
     }
 
     col++;
-    if (col >= mWidth) { col = 0; row++; }
+    if (col >= mWidth)
+    {
+      col = 0;
+      row++;
+    }
   }
 
   SDL_SetRenderTarget(renderer, nullptr);
@@ -470,116 +531,135 @@ void SceneLoader::loadLayer(std::unique_ptr<Registry>& registry,
 // Clases soportadas: wall, ramp, gap, saw, score_zone, checkpoint, player_spawn
 // ─────────────────────────────────────────────────────────────────────────────
 
-void SceneLoader::loadObjectGroup(sol::state& lua,
-                                  std::unique_ptr<Registry>& registry,
-                                  tinyxml2::XMLElement* objGroup) {
+void SceneLoader::loadObjectGroup(sol::state &lua,
+                                  std::unique_ptr<Registry> &registry,
+                                  tinyxml2::XMLElement *objGroup)
+{
   // Crea una score_zone invisible de ancho total del mapa encima de una saw
-  auto spawnScoreZone = [&](float sawY) {
+  auto spawnScoreZone = [&](float sawY)
+  {
     float fullW = static_cast<float>(Game::getInstance().mapWidth);
-    if (fullW <= 0) fullW = 800.0f;
+    if (fullW <= 0)
+      fullW = 800.0f;
     Entity sz = registry->createEntity();
-    sz.addComponent<TransformComponent>(glm::vec2(0.0f, sawY - 5.0f), glm::vec2(1,1), 0.0);
+    sz.addComponent<TransformComponent>(glm::vec2(0.0f, sawY - 5.0f), glm::vec2(1, 1), 0.0);
     sz.addComponent<BoxColliderComponent>(fullW, 10.0f);
     sz.addComponent<TagComponent>("score_zone");
     lua["on_click"] = sol::lua_nil;
-    lua["update"]   = sol::lua_nil;
+    lua["update"] = sol::lua_nil;
     lua.script_file("./assets/scripts/score_zone.lua");
     sz.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
   };
 
-  for (auto* obj = objGroup->FirstChildElement("object");
+  for (auto *obj = objGroup->FirstChildElement("object");
        obj != nullptr;
-       obj = obj->NextSiblingElement("object")) {
+       obj = obj->NextSiblingElement("object"))
+  {
 
-    const char* classAttr = obj->Attribute("class");
-    if (!classAttr) classAttr = obj->Attribute("type"); // compatibilidad Tiled < 1.9
-    if (!classAttr) continue;
+    const char *classAttr = obj->Attribute("class");
+    if (!classAttr)
+      classAttr = obj->Attribute("type"); // compatibilidad Tiled < 1.9
+    if (!classAttr)
+      continue;
     std::string cls = classAttr;
 
     float x = 0, y = 0, w = 16, h = 16;
-    obj->QueryFloatAttribute("x",      &x);
-    obj->QueryFloatAttribute("y",      &y);
-    obj->QueryFloatAttribute("width",  &w);
+    obj->QueryFloatAttribute("x", &x);
+    obj->QueryFloatAttribute("y", &y);
+    obj->QueryFloatAttribute("width", &w);
     obj->QueryFloatAttribute("height", &h);
 
     // Leer custom properties del objeto
-    auto getprop = [&](const std::string& name, const std::string& def) -> std::string {
-      auto* propsEl = obj->FirstChildElement("properties");
-      if (!propsEl) return def;
-      for (auto* p = propsEl->FirstChildElement("property"); p; p = p->NextSiblingElement("property")) {
-        const char* n = p->Attribute("name");
-        const char* v = p->Attribute("value");
-        if (n && v && std::string(n) == name) return v;
+    auto getprop = [&](const std::string &name, const std::string &def) -> std::string
+    {
+      auto *propsEl = obj->FirstChildElement("properties");
+      if (!propsEl)
+        return def;
+      for (auto *p = propsEl->FirstChildElement("property"); p; p = p->NextSiblingElement("property"))
+      {
+        const char *n = p->Attribute("name");
+        const char *v = p->Attribute("value");
+        if (n && v && std::string(n) == name)
+          return v;
       }
       return def;
     };
 
     Entity e = registry->createEntity();
 
-    if (cls == "wall") {
+    if (cls == "wall")
+    {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("wall");
     }
-    else if (cls == "ramp") {
+    else if (cls == "ramp")
+    {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("ramp");
     }
-    else if (cls == "gap") {
+    else if (cls == "gap")
+    {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("gap");
     }
-    else if (cls == "saw") {
+    else if (cls == "saw")
+    {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("saw");
-      if (getprop("spin", "false") == "true") {
+      if (getprop("spin", "false") == "true")
+      {
         lua["on_click"] = sol::lua_nil;
-        lua["update"]   = sol::lua_nil;
+        lua["update"] = sol::lua_nil;
         lua.script_file("./assets/scripts/saw_spin.lua");
         sol::function updateFn = lua["update"];
         e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
       }
       spawnScoreZone(y);
     }
-    else if (cls == "patrol_saw") {
+    else if (cls == "patrol_saw")
+    {
       // Pasar propiedades de Tiled al script antes de cargarlo
-      lua["patrol_axis"]  = getprop("patrol_axis",  "y");
+      lua["patrol_axis"] = getprop("patrol_axis", "y");
       lua["patrol_range"] = std::stof(getprop("patrol_range", "80"));
       lua["patrol_speed"] = std::stof(getprop("patrol_speed", "60"));
 
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
       e.addComponent<SpriteComponent>("saw_sprite", (int)w, (int)h, 0, 0, false);
-      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<BoxColliderComponent>(w * 0.65f, h * 0.45f);
       e.addComponent<TagComponent>("saw");
       lua["on_click"] = sol::lua_nil;
-      lua["update"]   = sol::lua_nil;
+      lua["update"] = sol::lua_nil;
       lua.script_file("./assets/scripts/saw_patrol.lua");
       e.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
       spawnScoreZone(y);
     }
-    else if (cls == "score_zone") {
+    else if (cls == "score_zone")
+    {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("score_zone");
       lua["on_click"] = sol::lua_nil;
-      lua["update"]   = sol::lua_nil;
+      lua["update"] = sol::lua_nil;
       lua.script_file("./assets/scripts/score_zone.lua");
       sol::function updateFn = lua["update"];
       e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
     }
-    else if (cls == "checkpoint") {
+    else if (cls == "checkpoint")
+    {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("checkpoint");
     }
-    else if (cls == "player_spawn") {
-      float speed    = std::stof(getprop("base_speed",      "220"));
-      float rotSpeed = std::stof(getprop("rotation_speed",  "130"));
-      float scaleX   = std::stof(getprop("scale",           "0.35"));
-      float scaleY   = scaleX;
+    else if (cls == "player_spawn")
+    {
+      float speed = std::stof(getprop("base_speed", "220"));
+      float rotSpeed = std::stof(getprop("rotation_speed", "130"));
+      float scaleX = std::stof(getprop("scale", "0.35"));
+      float scaleY = scaleX;
 
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(scaleX, scaleY), 0.0);
       e.addComponent<SpriteComponent>("car_yellow_sprite", 71, 131, 0, 0, false);
@@ -592,12 +672,13 @@ void SceneLoader::loadObjectGroup(sol::state& lua,
       e.getComponent<PlayerComponent>().spawnY = y;
       e.addComponent<NitroComponent>(0.5f, 0.5f);
       lua["on_click"] = sol::lua_nil;
-      lua["update"]   = sol::lua_nil;
+      lua["update"] = sol::lua_nil;
       lua.script_file("./assets/scripts/player_car.lua");
       sol::function updateFn = lua["update"];
       e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
     }
-    else {
+    else
+    {
       // Clase desconocida: liberar entidad vacía sin error fatal
       registry->destroyEntity(e);
     }

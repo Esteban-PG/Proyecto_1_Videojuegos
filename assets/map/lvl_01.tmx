@@ -224,36 +224,36 @@
   <object id="40" name="saw" type="saw" x="337.794" y="2146.29" width="46.2061" height="13.7092"/>
   <object id="44" name="saw" type="saw" x="16.8897" y="2497.73" width="127.28" height="14.2736"/>
   <object id="45" name="saw" type="saw" x="241.003" y="2497.73" width="142.997" height="14.2736"/>
-  <object id="49" name="saw" type="saw" x="16.831" y="528.343" width="190.035" height="46.5344"/>
-  <object id="50" name="saw" type="saw" x="14.8397" y="577.463" width="176.261" height="13.2273"/>
-  <object id="51" name="saw" type="saw" x="17.4949" y="594.058" width="156.846" height="12.681"/>
-  <object id="52" name="saw" type="saw" x="15.8352" y="610.984" width="142.906" height="12.681"/>
-  <object id="53" name="saw" type="saw" x="16.8311" y="641.797" width="110.291" height="12.681"/>
-  <object id="54" name="saw" type="saw" x="16.7312" y="625.405" width="125.647" height="12.681"/>
-  <object id="55" name="saw" type="saw" x="15.4515" y="657.61" width="95.5741" height="12.681"/>
-  <object id="56" name="saw" type="saw" x="16.7312" y="481.865" width="142.07" height="12.681"/>
-  <object id="57" name="saw" type="saw" x="16.5179" y="513.644" width="174.702" height="12.681"/>
-  <object id="58" name="saw" type="saw" x="18.0111" y="497.861" width="157.639" height="12.681"/>
-  <object id="59" name="saw" type="saw" x="17.2643" y="465.869" width="125.434" height="12.681"/>
-  <object id="60" name="saw" type="saw" x="16.8377" y="433.663" width="94.0814" height="12.681"/>
-  <object id="61" name="saw" type="saw" x="17.051" y="449.872" width="110.504" height="12.681"/>
-  <object id="62" name="saw" type="saw" x="17.3709" y="417.88" width="78.0852" height="12.681"/>
-  <object id="63" name="saw" type="saw" x="16.8376" y="401.457" width="62.7288" height="12.681"/>
+  <object id="49" name="saw" type="saw" x="16.831" y="528.343" width="183.606" height="46.5344"/>
+  <object id="50" name="saw" type="saw" x="14.8397" y="577.463" width="168.079" height="13.2273"/>
+  <object id="51" name="saw" type="saw" x="17.4949" y="594.058" width="150.417" height="12.681"/>
+  <object id="52" name="saw" type="saw" x="15.8352" y="610.984" width="133.263" height="12.681"/>
+  <object id="53" name="saw" type="saw" x="16.8311" y="641.797" width="97.7252" height="12.681"/>
+  <object id="54" name="saw" type="saw" x="16.7312" y="625.405" width="112.205" height="12.681"/>
+  <object id="55" name="saw" type="saw" x="15.4515" y="657.61" width="83.0083" height="12.681"/>
+  <object id="56" name="saw" type="saw" x="16.7312" y="481.865" width="132.427" height="12.681"/>
+  <object id="57" name="saw" type="saw" x="16.5179" y="513.644" width="165.643" height="12.681"/>
+  <object id="58" name="saw" type="saw" x="18.0111" y="497.861" width="143.904" height="12.681"/>
+  <object id="59" name="saw" type="saw" x="17.2643" y="465.869" width="114.914" height="12.681"/>
+  <object id="60" name="saw" type="saw" x="16.8377" y="433.663" width="80.639" height="12.681"/>
+  <object id="61" name="saw" type="saw" x="17.051" y="449.872" width="96.4771" height="12.681"/>
+  <object id="62" name="saw" type="saw" x="17.3709" y="417.88" width="62.0127" height="12.681"/>
+  <object id="63" name="saw" type="saw" x="16.8376" y="401.457" width="49.5786" height="12.681"/>
   <object id="64" name="saw" type="saw" x="16.6243" y="321.476" width="46.5193" height="76.666"/>
-  <object id="65" name="saw" type="saw" x="193.25" y="321.509" width="189.352" height="93.7359"/>
-  <object id="66" name="saw" type="saw" x="208.978" y="417.887" width="173.625" height="12.681"/>
-  <object id="67" name="saw" type="saw" x="223.898" y="433.614" width="158.704" height="12.681"/>
-  <object id="68" name="saw" type="saw" x="240.835" y="449.745" width="141.767" height="12.681"/>
-  <object id="69" name="saw" type="saw" x="256.562" y="465.875" width="126.04" height="12.681"/>
-  <object id="70" name="saw" type="saw" x="272.289" y="481.602" width="109.91" height="12.681"/>
-  <object id="71" name="saw" type="saw" x="288.016" y="497.329" width="94.1829" height="12.681"/>
-  <object id="72" name="saw" type="saw" x="305.76" y="513.459" width="76.4396" height="12.681"/>
+  <object id="65" name="saw" type="saw" x="201.432" y="321.509" width="181.17" height="93.7359"/>
+  <object id="66" name="saw" type="saw" x="223.005" y="417.887" width="159.598" height="12.681"/>
+  <object id="67" name="saw" type="saw" x="237.048" y="433.614" width="145.554" height="12.681"/>
+  <object id="68" name="saw" type="saw" x="250.771" y="449.745" width="131.831" height="12.681"/>
+  <object id="69" name="saw" type="saw" x="268.836" y="465.875" width="113.766" height="12.681"/>
+  <object id="70" name="saw" type="saw" x="287.777" y="481.602" width="94.422" height="12.681"/>
+  <object id="71" name="saw" type="saw" x="296.783" y="497.329" width="85.4161" height="12.681"/>
+  <object id="72" name="saw" type="saw" x="313.65" y="513.459" width="68.5495" height="12.681"/>
   <object id="73" name="saw" type="saw" x="319.47" y="529.993" width="62.7288" height="44.1351"/>
   <object id="74" name="saw" type="saw" x="304.953" y="577.174" width="77.2461" height="12.681"/>
-  <object id="75" name="saw" type="saw" x="289.226" y="593.305" width="94.1829" height="12.681"/>
-  <object id="76" name="saw" type="saw" x="272.289" y="609.032" width="110.313" height="12.681"/>
-  <object id="77" name="saw" type="saw" x="256.562" y="625.162" width="126.444" height="12.681"/>
-  <object id="78" name="saw" type="saw" x="241.238" y="641.696" width="141.364" height="12.681"/>
-  <object id="79" name="saw" type="saw" x="224.705" y="657.423" width="158.301" height="12.681"/>
+  <object id="75" name="saw" type="saw" x="299.162" y="593.305" width="84.2472" height="12.681"/>
+  <object id="76" name="saw" type="saw" x="283.686" y="609.032" width="98.9162" height="12.681"/>
+  <object id="77" name="saw" type="saw" x="264.452" y="625.162" width="118.554" height="12.681"/>
+  <object id="78" name="saw" type="saw" x="256.142" y="641.696" width="126.46" height="12.681"/>
+  <object id="79" name="saw" type="saw" x="237.271" y="657.423" width="145.735" height="12.681"/>
  </objectgroup>
 </map>
