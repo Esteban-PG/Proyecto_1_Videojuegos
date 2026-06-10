@@ -58,6 +58,10 @@ class ScriptSystem : public System {
     lua.set_function("playMusic", playMusic);
     lua.set_function("stopMusic", stopMusic);
 
+    // ── Animation ─────────────────────────────────────────────────────────
+    lua.set_function("playAnimation", playAnimation);
+    lua.set_function("setFlipX",      setFlipX);
+
     // ── Scene ─────────────────────────────────────────────────────────────
     lua.set_function("goToScene",     goToScene);
     lua.set_function("quitGame",      quitGame);

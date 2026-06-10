@@ -9,9 +9,7 @@
 
 #include "../components/animation_component.hpp"
 #include "../components/box_collider_component.hpp"
-#include "../components/circle_collider_component.hpp"
 #include "../components/clickable_component.hpp"
-#include "../components/nitro_component.hpp"
 #include "../components/player_component.hpp"
 #include "../components/rigid_body_component.hpp"
 #include "../components/script_component.hpp"
@@ -52,6 +50,9 @@ void SceneLoader::loadScene(
   }
   lua.script_file(sceneFilePath);
   sol::table scene = lua["scene"];
+
+  // ── Zoom (default 1.0 — sin zoom) ────────────────────────────────────────
+  Game::getInstance().zoomLevel = scene["zoom"].get_or(1.0f);
 
   // ── Assets ────────────────────────────────────────────────────────────────
   sol::optional<sol::table> hasColorTex = scene["color_textures"];
@@ -230,7 +231,8 @@ void SceneLoader::loadEntities(sol::state &lua, const sol::table &entities,
       newEntity.addComponent<AnimationComponent>(
           anim["num_frames"].get_or(1),
           anim["frame_rate_speed"].get_or(1),
-          anim["is_looping"].get_or(true));
+          anim["is_looping"].get_or(true),
+          anim["frames_per_row"].get_or(0));
     }
 
     // ── BoxColliderComponent ──────────────────────────────────────────────
@@ -242,29 +244,10 @@ void SceneLoader::loadEntities(sol::state &lua, const sol::table &entities,
           bc["height"].get_or(32.0f));
     }
 
-    // ── CircleColliderComponent ───────────────────────────────────────────
-    if (c["circle_collider"] != sol::lua_nil)
-    {
-      sol::table cc = c["circle_collider"];
-      newEntity.addComponent<CircleColliderComponent>(
-          cc["radius"].get_or(16.0f),
-          cc["width"].get_or(32),
-          cc["height"].get_or(32));
-    }
-
     // ── ClickableComponent ────────────────────────────────────────────────
     if (c["clickable"] != sol::lua_nil)
     {
       newEntity.addComponent<ClickableComponent>();
-    }
-
-    // ── NitroComponent ────────────────────────────────────────────────────
-    if (c["nitro"] != sol::lua_nil)
-    {
-      sol::table n = c["nitro"];
-      newEntity.addComponent<NitroComponent>(
-          n["cooldown"].get_or(2.0f),
-          n["boost_duration"].get_or(0.5f));
     }
 
     // ── PlayerComponent ───────────────────────────────────────────────────
@@ -272,10 +255,7 @@ void SceneLoader::loadEntities(sol::state &lua, const sol::table &entities,
     {
       sol::table p = c["player"];
       newEntity.addComponent<PlayerComponent>(
-          p["base_speed"].get_or(290.0f),
-          p["rotation_speed"].get_or(130.0f),
-          p["jump_duration"].get_or(2.5f),
-          p["jump_max_scale"].get_or(1.7f),
+          p["base_speed"].get_or(220.0f),
           p["base_scale_x"].get_or(1.0f),
           p["base_scale_y"].get_or(1.0f));
     }
@@ -535,27 +515,10 @@ void SceneLoader::loadObjectGroup(sol::state &lua,
                                   std::unique_ptr<Registry> &registry,
                                   tinyxml2::XMLElement *objGroup)
 {
-  // Crea una score_zone invisible de ancho total del mapa encima de una saw
-  auto spawnScoreZone = [&](float sawY)
-  {
-    float fullW = static_cast<float>(Game::getInstance().mapWidth);
-    if (fullW <= 0)
-      fullW = 800.0f;
-    Entity sz = registry->createEntity();
-    sz.addComponent<TransformComponent>(glm::vec2(0.0f, sawY - 5.0f), glm::vec2(1, 1), 0.0);
-    sz.addComponent<BoxColliderComponent>(fullW, 10.0f);
-    sz.addComponent<TagComponent>("score_zone");
-    lua["on_click"] = sol::lua_nil;
-    lua["update"] = sol::lua_nil;
-    lua.script_file("./assets/scripts/score_zone.lua");
-    sz.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
-  };
-
   for (auto *obj = objGroup->FirstChildElement("object");
        obj != nullptr;
        obj = obj->NextSiblingElement("object"))
   {
-
     const char *classAttr = obj->Attribute("class");
     if (!classAttr)
       classAttr = obj->Attribute("type"); // compatibilidad Tiled < 1.9
@@ -569,7 +532,7 @@ void SceneLoader::loadObjectGroup(sol::state &lua,
     obj->QueryFloatAttribute("width", &w);
     obj->QueryFloatAttribute("height", &h);
 
-    // Leer custom properties del objeto
+    // Leer custom properties del objeto Tiled
     auto getprop = [&](const std::string &name, const std::string &def) -> std::string
     {
       auto *propsEl = obj->FirstChildElement("properties");
@@ -593,60 +556,12 @@ void SceneLoader::loadObjectGroup(sol::state &lua,
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("wall");
     }
-    else if (cls == "ramp")
-    {
-      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
-      e.addComponent<BoxColliderComponent>(w, h);
-      e.addComponent<TagComponent>("ramp");
-    }
-    else if (cls == "gap")
-    {
-      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
-      e.addComponent<BoxColliderComponent>(w, h);
-      e.addComponent<TagComponent>("gap");
-    }
     else if (cls == "saw")
     {
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<SpriteComponent>("placeholder_spike", (int)w, (int)h, 0, 0, false);
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("saw");
-      if (getprop("spin", "false") == "true")
-      {
-        lua["on_click"] = sol::lua_nil;
-        lua["update"] = sol::lua_nil;
-        lua.script_file("./assets/scripts/saw_spin.lua");
-        sol::function updateFn = lua["update"];
-        e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
-      }
-      spawnScoreZone(y);
-    }
-    else if (cls == "patrol_saw")
-    {
-      // Pasar propiedades de Tiled al script antes de cargarlo
-      lua["patrol_axis"] = getprop("patrol_axis", "y");
-      lua["patrol_range"] = std::stof(getprop("patrol_range", "80"));
-      lua["patrol_speed"] = std::stof(getprop("patrol_speed", "60"));
-
-      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
-      e.addComponent<SpriteComponent>("saw_sprite", (int)w, (int)h, 0, 0, false);
-      e.addComponent<BoxColliderComponent>(w * 0.65f, h * 0.45f);
-      e.addComponent<TagComponent>("saw");
-      lua["on_click"] = sol::lua_nil;
-      lua["update"] = sol::lua_nil;
-      lua.script_file("./assets/scripts/saw_patrol.lua");
-      e.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
-      spawnScoreZone(y);
-    }
-    else if (cls == "score_zone")
-    {
-      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
-      e.addComponent<BoxColliderComponent>(w, h);
-      e.addComponent<TagComponent>("score_zone");
-      lua["on_click"] = sol::lua_nil;
-      lua["update"] = sol::lua_nil;
-      lua.script_file("./assets/scripts/score_zone.lua");
-      sol::function updateFn = lua["update"];
-      e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
     }
     else if (cls == "checkpoint")
     {
@@ -654,28 +569,79 @@ void SceneLoader::loadObjectGroup(sol::state &lua,
       e.addComponent<BoxColliderComponent>(w, h);
       e.addComponent<TagComponent>("checkpoint");
     }
+    else if (cls == "trigger_zone")
+    {
+      lua["trigger_id"] = getprop("trigger_id", "unnamed");
+      lua["trigger_w"]  = w;
+      lua["trigger_h"]  = h;
+
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("trigger");
+
+      lua["on_click"] = sol::lua_nil;
+      lua["update"]   = sol::lua_nil;
+      lua.script_file("./assets/scripts/trigger_zone.lua");
+      e.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
+    }
+    else if (cls == "triggered_wall")
+    {
+      lua["trigger_id"]   = getprop("trigger_id", "unnamed");
+      lua["patrol_axis"]  = getprop("patrol_axis", "y");
+      lua["patrol_speed"] = std::stof(getprop("patrol_speed", "150"));
+      lua["patrol_range"] = std::stof(getprop("patrol_range", "300"));
+
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<SpriteComponent>("placeholder_wall", (int)w, (int)h, 0, 0, false);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("wall");
+
+      lua["on_click"] = sol::lua_nil;
+      lua["update"]   = sol::lua_nil;
+      lua.script_file("./assets/scripts/triggered_wall.lua");
+      e.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
+    }
+    else if (cls == "triggered_spike")
+    {
+      lua["trigger_id"]   = getprop("trigger_id", "unnamed");
+      lua["patrol_axis"]  = getprop("patrol_axis", "y");
+      lua["patrol_speed"] = std::stof(getprop("patrol_speed", "200"));
+      lua["patrol_range"] = std::stof(getprop("patrol_range", "200"));
+
+      e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(1, 1), 0.0);
+      e.addComponent<SpriteComponent>("placeholder_spike", (int)w, (int)h, 0, 0, false);
+      e.addComponent<BoxColliderComponent>(w, h);
+      e.addComponent<TagComponent>("saw");
+
+      lua["on_click"] = sol::lua_nil;
+      lua["update"]   = sol::lua_nil;
+      lua.script_file("./assets/scripts/triggered_wall.lua");
+      e.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
+    }
     else if (cls == "player_spawn")
     {
-      float speed = std::stof(getprop("base_speed", "220"));
-      float rotSpeed = std::stof(getprop("rotation_speed", "130"));
-      float scaleX = std::stof(getprop("scale", "0.35"));
+      float speed  = std::stof(getprop("base_speed", "220"));
+      float scaleX = std::stof(getprop("scale", "1.5"));
       float scaleY = scaleX;
 
+      // Frame size is always 32x32 for the player sprite sheets
+      const int FRAME = 32;
+
       e.addComponent<TransformComponent>(glm::vec2(x, y), glm::vec2(scaleX, scaleY), 0.0);
-      e.addComponent<SpriteComponent>("car_yellow_sprite", 71, 131, 0, 0, false);
+      e.addComponent<SpriteComponent>("player_idle", FRAME, FRAME, 0, 0, false);
       e.addComponent<RigidBodyComponent>(glm::vec2(0, 0));
-      e.addComponent<BoxColliderComponent>(71, 131);
-      e.addComponent<CircleColliderComponent>(35, 71, 131);
+      e.addComponent<BoxColliderComponent>(FRAME, FRAME);
       e.addComponent<TagComponent>("player");
-      e.addComponent<PlayerComponent>(speed, rotSpeed, 0.30f, 2.0f, scaleX, scaleY);
+      // idle: 2 frames, fila 0 solamente, 6 fps, loop
+      e.addComponent<AnimationComponent>(2, 6, true, 2);
+      e.addComponent<PlayerComponent>(speed, scaleX, scaleY);
       e.getComponent<PlayerComponent>().spawnX = x;
       e.getComponent<PlayerComponent>().spawnY = y;
-      e.addComponent<NitroComponent>(0.5f, 0.5f);
+
       lua["on_click"] = sol::lua_nil;
-      lua["update"] = sol::lua_nil;
-      lua.script_file("./assets/scripts/player_car.lua");
-      sol::function updateFn = lua["update"];
-      e.addComponent<ScriptComponent>(updateFn, sol::lua_nil);
+      lua["update"]   = sol::lua_nil;
+      lua.script_file("./assets/scripts/platform_player.lua");
+      e.addComponent<ScriptComponent>(lua["update"], sol::lua_nil);
     }
     else
     {

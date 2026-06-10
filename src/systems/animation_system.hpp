@@ -10,9 +10,8 @@
 /**
  * @brief Advances sprite-sheet frame animations each tick.
  *
- * Reads AnimationComponent::frameSpeedRate and writes the resulting
- * frame index into SpriteComponent::srcRect.x so the renderer shows
- * the correct column of the sprite sheet.
+ * Supports single-row strips and multi-row sheets via framesPerRow.
+ * Non-looping animations (isLoop=false) freeze on the last frame.
  */
 class AnimationSystem : public System {
  public:
@@ -21,16 +20,25 @@ class AnimationSystem : public System {
     requireComponent<SpriteComponent>();
   }
 
-  /** @brief Advance all active animations by one frame tick. */
   void update() {
     for (Entity entity : getEntities()) {
-      auto& animation = entity.getComponent<AnimationComponent>();
+      auto& anim   = entity.getComponent<AnimationComponent>();
       auto& sprite = entity.getComponent<SpriteComponent>();
 
-      animation.currentFrame = ((SDL_GetTicks() - animation.startTime) *
-                                animation.frameSpeedRate / 1000) %
-                               animation.numberOfFrames;
-      sprite.srcRect.x = sprite.width * animation.currentFrame;
+      int elapsed = static_cast<int>(SDL_GetTicks() - anim.startTime)
+                    * anim.frameSpeedRate / 1000;
+
+      int frame;
+      if (anim.isLoop) {
+        frame = elapsed % anim.numberOfFrames;
+      } else {
+        frame = std::min(elapsed, anim.numberOfFrames - 1);
+      }
+      anim.currentFrame = frame;
+
+      int col = frame % anim.framesPerRow;
+      sprite.srcRect.x = sprite.width  * col;
+      sprite.srcRect.y = sprite.height * anim.baseRow;
     }
   }
 };

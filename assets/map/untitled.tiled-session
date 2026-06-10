@@ -1,15 +1,18 @@
 {
-    "activeFile": "lvl_02.tmx",
+    "activeFile": "lvl_03.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "fileStates": {
         "lvl_01.tmx": {
-            "scale": 1.3941,
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.4382,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 197.9771895846783,
-                "y": 811.6347464313895
+                "x": 207.55110554860246,
+                "y": 499.2351550549298
             }
         },
         "lvl_02.tmx": {
@@ -27,11 +30,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 0.8133,
+            "scale": 1.0899,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 799.8278617976146,
-                "y": 793.0652895610475
+                "x": 280.30094504082945,
+                "y": 1062.4827965868428
             }
         },
         "new_tileset.tsx": {
@@ -55,14 +58,15 @@
     "map.width": 100,
     "openFiles": [
         "lvl_03.tmx",
-        "lvl_02.tmx"
+        "lvl_02.tmx",
+        "lvl_01.tmx"
     ],
     "project": "untitled.tiled-project",
     "property.type": "float",
     "recentFiles": [
-        "lvl_03.tmx",
-        "lvl_02.tmx",
         "lvl_01.tmx",
+        "lvl_02.tmx",
+        "lvl_03.tmx",
         "new_tileset.tsx",
         "terrain_2.tsx",
         "terrain.tsx"

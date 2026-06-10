@@ -7,18 +7,14 @@
 #include "../events/click_event.hpp"
 #include "../systems/animation_system.hpp"
 #include "../systems/box_collision_system.hpp"
-#include "../systems/car_movement_system.hpp"
-#include "../systems/collision_system.hpp"
-#include "../systems/damage_system.hpp"
 #include "../systems/movement_system.hpp"
-#include "../systems/nitro_system.hpp"
+#include "../systems/platform_movement_system.hpp"
 #include "../systems/render_system.hpp"
 #include "../systems/render_text_system.hpp"
 #include "../systems/script_system.hpp"
 #include "../systems/tag_system.hpp"
 #include "../systems/ui_system.hpp"
 #include "../components/player_component.hpp"
-#include "../components/nitro_component.hpp"
 #include "../components/sprite_component.hpp"
 #include "../components/transform_component.hpp"
 
@@ -72,7 +68,7 @@ void Game::init() {
   windowWidth  = 800;
   windowHeight = 600;
 
-  window = SDL_CreateWindow("Nitro Rush", SDL_WINDOWPOS_CENTERED,
+  window = SDL_CreateWindow("Platformer", SDL_WINDOWPOS_CENTERED,
                             SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight,
                             SDL_WINDOW_SHOWN);
   if (!window) {
@@ -97,15 +93,11 @@ void Game::init() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 void Game::Setup() {
-  // Order matters: some systems depend on others being present
   registry->addSystem<TagSystem>();
-  registry->addSystem<CollisionSystem>();
   registry->addSystem<BoxCollisionSystem>();
   registry->addSystem<RenderSystem>();
   registry->addSystem<MovementSystem>();
-  registry->addSystem<CarMovementSystem>();
-  registry->addSystem<NitroSystem>();
-  registry->addSystem<DamageSystem>();
+  registry->addSystem<PlatformMovementSystem>();
   registry->addSystem<AnimationSystem>();
   registry->addSystem<ScriptSystem>();
   registry->addSystem<RenderTextSystem>();
@@ -240,8 +232,9 @@ void Game::updateCamera(float dt) {
     halfH = (sp.height * static_cast<float>(tf.scale.y)) * 0.5f;
   }
 
-  cameraX = tf.position.x + halfW - windowWidth  * 0.5f;
-  cameraY = tf.position.y + halfH - windowHeight * 0.5f;
+  // Divide viewport half-size by zoom so the player stays centered
+  cameraX = tf.position.x + halfW - (windowWidth  * 0.5f) / zoomLevel;
+  cameraY = tf.position.y + halfH - (windowHeight * 0.5f) / zoomLevel;
 
   // Camera shake: decrement timer y aplicar offset aleatorio
   if (shakeTimer > 0.0f) {
@@ -276,7 +269,6 @@ void Game::update() {
 
   // Reset per-frame event subscriptions
   eventManager->reset();
-  registry->getSystem<DamageSystem>().subscribeToCollisionEvent(eventManager);
   registry->getSystem<UISystem>().subscribeToClickEvent(eventManager);
 
   registry->update();
@@ -284,35 +276,19 @@ void Game::update() {
   // ── Game systems in dependency order ───────────────────────────────────────
   registry->getSystem<TagSystem>().update();
 
-  // Update score / nitro globals for Lua HUD scripts
+  // Update score global for Lua HUD scripts
   {
     auto& tagSys = registry->getSystem<TagSystem>();
     Entity player = tagSys.getEntityByTag("player");
-    lua["current_score"]    = 0;
-    lua["nitro_cooldown"]   = 0.0f;
-    lua["nitro_max_cooldown"] = 2.0f;
-    lua["nitro_ready"]      = true;
-
-    if (player.getId() >= 0) {
-      if (player.hasComponent<PlayerComponent>()) {
-        lua["current_score"] =
-            player.getComponent<PlayerComponent>().score;
-      }
-      if (player.hasComponent<NitroComponent>()) {
-        const auto& n = player.getComponent<NitroComponent>();
-        lua["nitro_cooldown"]     = n.cooldownRemaining;
-        lua["nitro_max_cooldown"] = n.cooldownTime;
-        lua["nitro_ready"]        = !n.isOnCooldown;
-      }
-    }
+    lua["current_score"] = 0;
+    if (player.getId() >= 0 && player.hasComponent<PlayerComponent>())
+      lua["current_score"] = player.getComponent<PlayerComponent>().score;
   }
 
   registry->getSystem<ScriptSystem>().update(lua);
-  registry->getSystem<NitroSystem>().update(deltaTime);
-  registry->getSystem<CarMovementSystem>().update(deltaTime);
+  registry->getSystem<PlatformMovementSystem>().update(deltaTime);
   registry->getSystem<MovementSystem>().update(deltaTime);
   registry->getSystem<BoxCollisionSystem>().update();
-  registry->getSystem<CollisionSystem>().update(eventManager);
   registry->getSystem<AnimationSystem>().update();
 
   updateCamera(static_cast<float>(deltaTime));
@@ -326,9 +302,13 @@ void Game::render() {
   SDL_SetRenderDrawColor(renderer, 20, 20, 28, 255);
   SDL_RenderClear(renderer);
 
+  // World rendering at zoom level
+  SDL_RenderSetScale(renderer, zoomLevel, zoomLevel);
   registry->getSystem<RenderSystem>().update(renderer, assetManager, cameraX, cameraY);
   registry->getSystem<RenderTextSystem>().update(renderer, assetManager, cameraX, cameraY);
 
+  // UI overlays always at 1:1 scale
+  SDL_RenderSetScale(renderer, 1.0f, 1.0f);
   if (isPaused)    renderPauseOverlay();
   if (isWinScreen) renderWinScreen();
 

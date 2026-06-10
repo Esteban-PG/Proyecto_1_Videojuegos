@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="25" height="19" tilewidth="32" tileheight="32" infinite="0" nextlayerid="2" nextobjectid="15">
+ <objectgroup id="1" name="objects">
+  <!-- Suelo principal -->
+  <object id="1" class="wall" x="0" y="500" width="800" height="32"/>
+  <!-- Plataforma flotante -->
+  <object id="2" class="wall" x="200" y="350" width="150" height="20"/>
+  <!-- Spawn del jugador: se para justo encima del suelo (y=500 - 48 efectivos = 452) -->
+  <object id="3" class="player_spawn" x="100" y="452" width="32" height="32"/>
+  <!-- Pincho 1: en el camino directo al trigger -->
+  <object id="7" class="saw" x="300" y="468" width="32" height="32"/>
+  <!-- Pincho 2: entre el trigger y el checkpoint -->
+  <object id="8" class="saw" x="580" y="468" width="32" height="32"/>
+  <!-- Zona que activa la pared-trampa -->
+  <object id="4" class="trigger_zone" x="350" y="460" width="60" height="40">
+   <properties>
+    <property name="trigger_id" value="trap_01"/>
+   </properties>
+  </object>
+  <!-- Pared que cae al activar la trampa -->
+  <object id="5" class="triggered_wall" x="430" y="200" width="32" height="150">
+   <properties>
+    <property name="trigger_id" value="trap_01"/>
+    <property name="patrol_axis" value="y"/>
+    <property name="patrol_speed" value="180"/>
+    <property name="patrol_range" value="250"/>
+   </properties>
+  </object>
+  <!-- Checkpoint al final -->
+  <object id="6" class="checkpoint" x="700" y="460" width="40" height="40"/>
+ </objectgroup>
+</map>

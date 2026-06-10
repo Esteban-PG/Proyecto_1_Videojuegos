@@ -85,6 +85,7 @@ class Game {
   int           mapHeight     = 0;
   float         shakeTimer    = 0.0f;
   float         shakeAmplitude = 0.0f;
+  float         zoomLevel     = 2.0f;  ///< World render scale (UI always at 1.0)
 
   static Game& getInstance();
   void triggerShake(float duration, float amplitude);
